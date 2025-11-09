@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { MoodLegend } from "./MoodLegend.jsx";
 import { InsightPills } from "./InsightPills.jsx";
 import { MoodGrid } from "./MoodGrid.jsx";
@@ -6,7 +7,11 @@ import { YearMoodGrid } from "./YearMoodGrid.jsx";
 import { hasYearData } from "../utils/data.js";
 
 export const OverviewPanel = ({ data, totalDaysTracked, entries, year, todayKey }) => {
+  const [orientation, setOrientation] = useState("months-first");
   const hasData = hasYearData(data);
+  const toggleOrientation = () =>
+    setOrientation((prev) => (prev === "months-first" ? "days-first" : "months-first"));
+  const toggleLabel = orientation === "months-first" ? "Switch to 31×12" : "Switch to 12×31";
 
   return (
     <section className="overview">
@@ -23,8 +28,13 @@ export const OverviewPanel = ({ data, totalDaysTracked, entries, year, todayKey 
       {hasData ? (
         <>
           <div className="overview__panel">
-            <h3 className="section-title">Year at a glance</h3>
-            <YearMoodGrid entries={entries} year={year} todayKey={todayKey} />
+            <div className="overview__panel-header">
+              <h3 className="section-title">Year at a glance</h3>
+              <button type="button" className="year-grid__toggle" onClick={toggleOrientation}>
+                {toggleLabel}
+              </button>
+            </div>
+            <YearMoodGrid entries={entries} year={year} todayKey={todayKey} orientation={orientation} />
           </div>
           <div className="overview__panel">
             <MoodGrid data={data} />
