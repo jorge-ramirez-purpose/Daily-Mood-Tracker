@@ -5,11 +5,35 @@ import type { NormalizedEntry, StoredEntry } from "./utils/data";
 import { aggregateYearData, normalizeEntry, serializeEntry } from "./utils/data";
 import { DailyMoodSelector } from "./components/DailyMoodSelector";
 import { OverviewPanel } from "./components/OverviewPanel";
-import { buildJanuaryMockMap } from "./data/januaryMock";
+import {
+  buildJanuaryMockMap,
+  buildFebruaryMockMap,
+  buildMarchMockMap,
+  buildAprilMockMap,
+  buildMayMockMap,
+  buildJuneMockMap,
+  buildJulyMockMap,
+  buildAugustMockMap,
+  buildSeptemberMockMap,
+  buildOctoberMockMap,
+  buildNovemberMockMap,
+} from "./data/monthMocks";
 
 const ENTRIES_STORAGE_KEY = "mood-tracker.daily.entries";
 const CURRENT_YEAR = new Date().getFullYear();
-const DEFAULT_ENTRIES = buildJanuaryMockMap(CURRENT_YEAR);
+const DEFAULT_ENTRIES = {
+  ...buildJanuaryMockMap(CURRENT_YEAR),
+  ...buildFebruaryMockMap(CURRENT_YEAR),
+  ...buildMarchMockMap(CURRENT_YEAR),
+  ...buildAprilMockMap(CURRENT_YEAR),
+  ...buildMayMockMap(CURRENT_YEAR),
+  ...buildJuneMockMap(CURRENT_YEAR),
+  ...buildJulyMockMap(CURRENT_YEAR),
+  ...buildAugustMockMap(CURRENT_YEAR),
+  ...buildSeptemberMockMap(CURRENT_YEAR),
+  ...buildOctoberMockMap(CURRENT_YEAR),
+  ...buildNovemberMockMap(CURRENT_YEAR),
+};
 
 type EntriesMap = Record<string, StoredEntry>;
 
