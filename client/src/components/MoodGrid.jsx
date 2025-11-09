@@ -1,6 +1,13 @@
 import { Fragment, useMemo } from "react";
 import { MOODS } from "../constants/moods.js";
 
+const formatValue = (value) => {
+  if (Number.isInteger(value)) return value;
+  return Number(value ?? 0)
+    .toFixed(1)
+    .replace(/\.0$/, "");
+};
+
 export const MoodGrid = ({ data }) => {
   const maxPerMonth = useMemo(() => data.map((row) => Math.max(...MOODS.map((mood) => row[mood.key]))), [data]);
 
@@ -28,7 +35,7 @@ export const MoodGrid = ({ data }) => {
                   style={{ background: mood.color, opacity }}
                   title={`${row.month} – ${mood.key}: ${value} day${value === 1 ? "" : "s"}`}
                 >
-                  <span className="grid__value">{value}</span>
+                  <span className="grid__value">{formatValue(value)}</span>
                 </div>
               );
             })}

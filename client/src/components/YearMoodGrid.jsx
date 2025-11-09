@@ -1,7 +1,8 @@
 import { useMemo } from "react";
 import { MOODS, MONTHS } from "../constants/moods.js";
+import { normalizeEntry } from "../utils/data.js";
 
-const moodColorMap = Object.fromEntries(MOODS.map((mood) => [mood.key, mood.color]));
+const colorMap = Object.fromEntries(MOODS.map((mood) => [mood.key, mood.color]));
 
 const pad = (val) => String(val).padStart(2, "0");
 
@@ -19,11 +20,12 @@ export const YearMoodGrid = ({ entries = {}, year, todayKey, orientation = "mont
           }
 
           const dateKey = `${year}-${pad(monthIndex + 1)}-${pad(dayNumber)}`;
-          const moodKey = entries[dateKey] ?? null;
+          const normalized = normalizeEntry(entries[dateKey]);
           return {
             day: dayNumber,
             dateKey,
-            moodKey,
+            firstMoodKey: normalized?.first ?? null,
+            secondMoodKey: normalized?.second ?? null,
             isToday: dateKey === todayKey,
           };
         });
@@ -34,22 +36,30 @@ export const YearMoodGrid = ({ entries = {}, year, todayKey, orientation = "mont
   );
 
   const renderCell = (monthLabel, day) => {
-    const color = day.moodKey ? moodColorMap[day.moodKey] : "transparent";
+    const primaryColor = day.firstMoodKey ? colorMap[day.firstMoodKey] : "transparent";
+    const secondaryColor =
+      day.secondMoodKey && day.secondMoodKey !== day.firstMoodKey ? colorMap[day.secondMoodKey] : null;
     let cellClass = "year-grid__cell";
     if (day.isDisabled) cellClass += " year-grid__cell--disabled";
-    else if (!day.moodKey) cellClass += " year-grid__cell--empty";
+    else if (!day.firstMoodKey) cellClass += " year-grid__cell--empty";
     if (day.isToday) cellClass += " year-grid__cell--today";
+    if (secondaryColor) cellClass += " year-grid__cell--split";
 
-    return (
-      <div
-        key={`${monthLabel}-${day.day}`}
-        className={cellClass}
-        title={
-          day.isDisabled ? "N/A" : day.moodKey ? `${monthLabel} ${day.day}: ${day.moodKey}` : `${monthLabel} ${day.day}: no entry`
+    const style = secondaryColor
+      ? {
+          background: `linear-gradient(135deg, ${primaryColor} 0%, ${primaryColor} 48%, ${secondaryColor} 52%, ${secondaryColor} 100%)`,
         }
-        style={{ background: day.moodKey ? color : undefined }}
-      />
-    );
+      : { background: day.firstMoodKey ? primaryColor : undefined };
+
+    const title = day.isDisabled
+      ? "N/A"
+      : day.firstMoodKey
+      ? secondaryColor
+        ? `${monthLabel} ${day.day}: ${day.firstMoodKey} · ${day.secondMoodKey}`
+        : `${monthLabel} ${day.day}: ${day.firstMoodKey}`
+      : `${monthLabel} ${day.day}: no entry`;
+
+    return <div key={`${monthLabel}-${day.day}`} className={cellClass} title={title} style={style} />;
   };
 
   const renderMonthsFirst = () => (
@@ -71,7 +81,10 @@ export const YearMoodGrid = ({ entries = {}, year, todayKey, orientation = "mont
   );
 
   const renderDaysFirst = () => (
-    <div className="year-grid__table" style={{ gridTemplateColumns: `70px repeat(${MONTHS.length}, minmax(48px, 1fr))` }}>
+    <div
+      className="year-grid__table"
+      style={{ gridTemplateColumns: `70px repeat(${MONTHS.length}, minmax(48px, 1fr))` }}
+    >
       <div className="year-grid__corner">Day</div>
       {MONTHS.map((month) => (
         <div key={`month-header-${month}`} className="year-grid__day-header">

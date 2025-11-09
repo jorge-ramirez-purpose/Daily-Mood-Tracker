@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import "./App.css";
 import { MOODS } from "./constants/moods.js";
-import { aggregateYearData } from "./utils/data.js";
+import { aggregateYearData, normalizeEntry, serializeEntry } from "./utils/data.js";
 import { DailyMoodSelector } from "./components/DailyMoodSelector.jsx";
 import { OverviewPanel } from "./components/OverviewPanel.jsx";
 
@@ -40,7 +40,10 @@ const App = () => {
   }, [entries]);
 
   const todayKey = getTodayKey();
-  const todayMood = entries[todayKey] ?? null;
+  const todayEntry = normalizeEntry(entries[todayKey]);
+  const primaryMood = todayEntry?.first ?? null;
+  const secondaryMood = todayEntry?.second ?? null;
+  const isDualDay = Boolean(todayEntry?.second);
   const currentYear = new Date().getFullYear();
 
   const yearData = useMemo(() => aggregateYearData(entries, currentYear), [entries, currentYear]);
@@ -53,8 +56,45 @@ const App = () => {
     [entries, currentYear]
   );
 
-  const handleMoodSelect = (moodKey) => {
-    setEntries((prev) => ({ ...prev, [todayKey]: moodKey }));
+  const updateTodayEntry = (updater) => {
+    setEntries((prev) => {
+      const normalized = normalizeEntry(prev[todayKey]) ?? { first: null, second: null };
+      const next = updater(normalized);
+      if (!next || !next.first) {
+        const { [todayKey]: _omitted, ...rest } = prev;
+        return rest;
+      }
+      const serialized = serializeEntry(next);
+      if (!serialized) {
+        const { [todayKey]: _omit, ...rest } = prev;
+        return rest;
+      }
+      return { ...prev, [todayKey]: serialized };
+    });
+  };
+
+  const handlePrimarySelect = (moodKey) => {
+    updateTodayEntry((entry) => ({
+      first: moodKey,
+      second: entry.second,
+    }));
+  };
+
+  const handleSecondarySelect = (moodKey) => {
+    updateTodayEntry((entry) => ({
+      first: entry.first ?? moodKey,
+      second: moodKey,
+    }));
+  };
+
+  const handleToggleDual = (checked) => {
+    updateTodayEntry((entry) => {
+      if (!entry.first) return entry;
+      return {
+        first: entry.first,
+        second: checked ? entry.second ?? entry.first : null,
+      };
+    });
   };
 
   return (
@@ -62,8 +102,12 @@ const App = () => {
       <div className="app__container">
         <DailyMoodSelector
           moods={MOODS}
-          selectedMood={todayMood}
-          onSelect={handleMoodSelect}
+          primaryMood={primaryMood}
+          secondaryMood={secondaryMood}
+          isDual={isDualDay}
+          onSelectPrimary={handlePrimarySelect}
+          onSelectSecondary={handleSecondarySelect}
+          onToggleDual={handleToggleDual}
           todayLabel={formatTodayLabel()}
         />
 
