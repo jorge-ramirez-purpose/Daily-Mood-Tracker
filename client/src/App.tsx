@@ -129,16 +129,9 @@ const App = () => {
     });
   };
 
-  const handleApplyMockData = () => {
-    setEntries({ ...DEFAULT_ENTRIES });
-  };
-
   return (
     <div className="app">
       <div className="app__container">
-        <button type="button" className="app__button app__button--primary" onClick={handleApplyMockData}>
-          Apply mock January data
-        </button>
         <DailyMoodSelector
           moods={MOODS}
           primaryMood={primaryMood}
