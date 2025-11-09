@@ -33,7 +33,7 @@ export const OverviewPanel = ({ data, totalDaysTracked, entries, year, todayKey 
         <MoodLegend />
       </header>
 
-      <InsightPills data={data} totalDaysTracked={totalDaysTracked} />
+      <InsightPills data={data} totalDaysTracked={totalDaysTracked} year={year} />
 
       {hasData ? (
         <>
