@@ -80,11 +80,13 @@ export const YearMoodGrid = ({ entries = {}, year, todayKey, orientation = "mont
     if (day.isToday) cellClass += " year-grid__cell--today";
     if (secondaryColor) cellClass += " year-grid__cell--split";
 
-    const style: CSSProperties = secondaryColor
-      ? {
-          background: `linear-gradient(135deg, ${primaryColor} 0%, ${primaryColor} 48%, ${secondaryColor} 52%, ${secondaryColor} 100%)`,
-        }
-      : { background: day.firstMoodKey ? primaryColor : undefined };
+    const style: CSSProperties =
+      secondaryColor != null
+        ? ({
+            "--primary-color": primaryColor,
+            "--secondary-color": secondaryColor,
+          } as CSSProperties)
+        : { background: day.firstMoodKey ? primaryColor : undefined };
 
     const title = day.isDisabled
       ? "N/A"

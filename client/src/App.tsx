@@ -5,17 +5,22 @@ import type { NormalizedEntry, StoredEntry } from "./utils/data";
 import { aggregateYearData, normalizeEntry, serializeEntry } from "./utils/data";
 import { DailyMoodSelector } from "./components/DailyMoodSelector";
 import { OverviewPanel } from "./components/OverviewPanel";
+import { buildJanuaryMockMap } from "./data/januaryMock";
 
 const ENTRIES_STORAGE_KEY = "mood-tracker.daily.entries";
+const CURRENT_YEAR = new Date().getFullYear();
+const DEFAULT_ENTRIES = buildJanuaryMockMap(CURRENT_YEAR);
 
 type EntriesMap = Record<string, StoredEntry>;
 
 const loadEntries = (): EntriesMap => {
-  if (typeof window === "undefined") return {};
+  if (typeof window === "undefined") return { ...DEFAULT_ENTRIES };
   try {
-    return JSON.parse(window.localStorage.getItem(ENTRIES_STORAGE_KEY) ?? "{}") as EntriesMap;
+    const stored = JSON.parse(window.localStorage.getItem(ENTRIES_STORAGE_KEY) ?? "{}") as EntriesMap;
+    if (!stored || Object.keys(stored).length === 0) return { ...DEFAULT_ENTRIES };
+    return stored;
   } catch {
-    return {};
+    return { ...DEFAULT_ENTRIES };
   }
 };
 
@@ -47,7 +52,7 @@ const App = () => {
   const primaryMood = todayEntry?.first ?? null;
   const secondaryMood = todayEntry?.second ?? null;
   const isDualDay = Boolean(todayEntry?.second);
-  const currentYear = new Date().getFullYear();
+  const currentYear = CURRENT_YEAR;
 
   const yearData = useMemo(() => aggregateYearData(entries, currentYear), [entries, currentYear]);
   const totalDaysTracked = useMemo(
@@ -100,9 +105,16 @@ const App = () => {
     });
   };
 
+  const handleApplyMockData = () => {
+    setEntries({ ...DEFAULT_ENTRIES });
+  };
+
   return (
     <div className="app">
       <div className="app__container">
+        <button type="button" className="app__button app__button--primary" onClick={handleApplyMockData}>
+          Apply mock January data
+        </button>
         <DailyMoodSelector
           moods={MOODS}
           primaryMood={primaryMood}

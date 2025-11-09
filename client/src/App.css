@@ -403,6 +403,8 @@
   border-left: 1px solid rgba(148, 163, 184, 0.25);
   border-top: 1px solid rgba(148, 163, 184, 0.25);
   transition: transform 0.1s ease, box-shadow 0.1s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .year-grid__cell--empty {
@@ -420,7 +422,24 @@
 }
 
 .year-grid__cell--split {
-  position: relative;
+  background: transparent;
+}
+
+.year-grid__cell--split::before,
+.year-grid__cell--split::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.year-grid__cell--split::before {
+  background: var(--primary-color, transparent);
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+}
+
+.year-grid__cell--split::after {
+  background: var(--secondary-color, transparent);
+  clip-path: polygon(100% 0, 100% 100%, 0 100%);
 }
 
 .year-grid__toggle {
