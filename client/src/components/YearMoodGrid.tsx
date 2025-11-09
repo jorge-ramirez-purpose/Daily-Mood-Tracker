@@ -116,7 +116,10 @@ export const YearMoodGrid = ({ entries = {}, year, todayKey, orientation = "mont
   );
 
   const renderDaysFirst = () => (
-    <div className="year-grid__table" style={{ gridTemplateColumns: `70px repeat(${MONTHS.length}, minmax(48px, 1fr))` }}>
+    <div
+      className="year-grid__table"
+      style={{ gridTemplateColumns: `70px repeat(${MONTHS.length}, minmax(48px, 1fr))` }}
+    >
       <div className="year-grid__corner">Day</div>
       {MONTHS.map((month) => (
         <div key={`month-header-${month}`} className="year-grid__day-header">

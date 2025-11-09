@@ -12,10 +12,7 @@ type MoodGridProps = {
 };
 
 export const MoodGrid = ({ data }: MoodGridProps) => {
-  const maxPerMonth = useMemo(
-    () => data.map((row) => Math.max(...MOODS.map((mood) => row[mood.key]))),
-    [data]
-  );
+  const maxPerMonth = useMemo(() => data.map((row) => Math.max(...MOODS.map((mood) => row[mood.key]))), [data]);
 
   return (
     <div className="grid-wrapper">
