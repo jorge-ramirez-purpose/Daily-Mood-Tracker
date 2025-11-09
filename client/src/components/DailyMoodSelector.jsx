@@ -27,5 +27,3 @@ export const DailyMoodSelector = ({ moods, selectedMood, onSelect, todayLabel })
     </section>
   );
 };
-
-export default DailyMoodSelector;

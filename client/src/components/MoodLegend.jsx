@@ -12,5 +12,3 @@ export const MoodLegend = () => {
     </div>
   );
 };
-
-export default MoodLegend;

@@ -38,5 +38,3 @@ export const MoodGrid = ({ data }) => {
     </div>
   );
 };
-
-export default MoodGrid;

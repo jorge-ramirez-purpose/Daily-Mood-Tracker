@@ -50,5 +50,3 @@ export const OverviewPanel = ({ data, totalDaysTracked, entries, year, todayKey 
     </section>
   );
 };
-
-export default OverviewPanel;

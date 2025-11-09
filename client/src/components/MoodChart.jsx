@@ -28,5 +28,3 @@ export const MoodChart = ({ data }) => {
     </div>
   );
 };
-
-export default MoodChart;

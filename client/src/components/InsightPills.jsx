@@ -29,5 +29,3 @@ export const InsightPills = ({ data, totalDaysTracked }) => {
     </div>
   );
 };
-
-export default InsightPills;

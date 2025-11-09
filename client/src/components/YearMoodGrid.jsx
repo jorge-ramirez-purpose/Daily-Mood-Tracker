@@ -90,5 +90,3 @@ export const YearMoodGrid = ({ entries = {}, year, todayKey, orientation = "mont
 
   return <div className="year-grid">{orientation === "months-first" ? renderMonthsFirst() : renderDaysFirst()}</div>;
 };
-
-export default YearMoodGrid;
