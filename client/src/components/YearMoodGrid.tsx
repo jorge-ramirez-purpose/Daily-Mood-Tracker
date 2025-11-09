@@ -1,33 +1,67 @@
-import { useMemo } from "react";
-import { MOODS, MONTHS } from "../constants/moods.js";
-import { normalizeEntry } from "../utils/data.js";
+import { useMemo, type CSSProperties } from "react";
+import { MOODS, MONTHS, type MoodKey, type MonthLabel } from "../constants/moods";
+import type { NormalizedEntry, StoredEntry } from "../utils/data";
+import { normalizeEntry } from "../utils/data";
 
-const colorMap = Object.fromEntries(MOODS.map((mood) => [mood.key, mood.color]));
+type Orientation = "months-first" | "days-first";
 
-const pad = (val) => String(val).padStart(2, "0");
+type DayCell = {
+  day: number;
+  isDisabled: boolean;
+  firstMoodKey: MoodKey | null;
+  secondMoodKey: MoodKey | null;
+  isToday: boolean;
+};
 
-const daysInMonth = (year, monthIndex) => new Date(year, monthIndex + 1, 0).getDate();
+type MonthData = {
+  month: MonthLabel;
+  days: DayCell[];
+};
 
-export const YearMoodGrid = ({ entries = {}, year, todayKey, orientation = "months-first" }) => {
-  const months = useMemo(
+type YearMoodGridProps = {
+  entries: Record<string, StoredEntry>;
+  year: number;
+  todayKey: string;
+  orientation?: Orientation;
+};
+
+const colorMap: Record<MoodKey, string> = Object.fromEntries(MOODS.map((mood) => [mood.key, mood.color])) as Record<
+  MoodKey,
+  string
+>;
+
+const pad = (val: number) => String(val).padStart(2, "0");
+
+const daysInMonth = (year: number, monthIndex: number) => new Date(year, monthIndex + 1, 0).getDate();
+
+const buildDay = (
+  year: number,
+  monthIndex: number,
+  dayNumber: number,
+  todayKey: string,
+  entry: NormalizedEntry
+): DayCell => ({
+  day: dayNumber,
+  isDisabled: false,
+  firstMoodKey: entry?.first ?? null,
+  secondMoodKey: entry?.second ?? null,
+  isToday: `${year}-${pad(monthIndex + 1)}-${pad(dayNumber)}` === todayKey,
+});
+
+export const YearMoodGrid = ({ entries = {}, year, todayKey, orientation = "months-first" }: YearMoodGridProps) => {
+  const months = useMemo<MonthData[]>(
     () =>
       MONTHS.map((month, monthIndex) => {
         const limit = daysInMonth(year, monthIndex);
-        const days = Array.from({ length: 31 }, (_, dayIndex) => {
+        const days: DayCell[] = Array.from({ length: 31 }, (_, dayIndex) => {
           const dayNumber = dayIndex + 1;
           if (dayNumber > limit) {
-            return { day: dayNumber, isDisabled: true };
+            return { day: dayNumber, isDisabled: true, firstMoodKey: null, secondMoodKey: null, isToday: false };
           }
 
           const dateKey = `${year}-${pad(monthIndex + 1)}-${pad(dayNumber)}`;
           const normalized = normalizeEntry(entries[dateKey]);
-          return {
-            day: dayNumber,
-            dateKey,
-            firstMoodKey: normalized?.first ?? null,
-            secondMoodKey: normalized?.second ?? null,
-            isToday: dateKey === todayKey,
-          };
+          return buildDay(year, monthIndex, dayNumber, todayKey, normalized);
         });
 
         return { month, days };
@@ -35,17 +69,18 @@ export const YearMoodGrid = ({ entries = {}, year, todayKey, orientation = "mont
     [entries, year, todayKey]
   );
 
-  const renderCell = (monthLabel, day) => {
+  const renderCell = (monthLabel: MonthLabel, day: DayCell) => {
     const primaryColor = day.firstMoodKey ? colorMap[day.firstMoodKey] : "transparent";
     const secondaryColor =
       day.secondMoodKey && day.secondMoodKey !== day.firstMoodKey ? colorMap[day.secondMoodKey] : null;
+
     let cellClass = "year-grid__cell";
     if (day.isDisabled) cellClass += " year-grid__cell--disabled";
     else if (!day.firstMoodKey) cellClass += " year-grid__cell--empty";
     if (day.isToday) cellClass += " year-grid__cell--today";
     if (secondaryColor) cellClass += " year-grid__cell--split";
 
-    const style = secondaryColor
+    const style: CSSProperties = secondaryColor
       ? {
           background: `linear-gradient(135deg, ${primaryColor} 0%, ${primaryColor} 48%, ${secondaryColor} 52%, ${secondaryColor} 100%)`,
         }
@@ -81,10 +116,7 @@ export const YearMoodGrid = ({ entries = {}, year, todayKey, orientation = "mont
   );
 
   const renderDaysFirst = () => (
-    <div
-      className="year-grid__table"
-      style={{ gridTemplateColumns: `70px repeat(${MONTHS.length}, minmax(48px, 1fr))` }}
-    >
+    <div className="year-grid__table" style={{ gridTemplateColumns: `70px repeat(${MONTHS.length}, minmax(48px, 1fr))` }}>
       <div className="year-grid__corner">Day</div>
       {MONTHS.map((month) => (
         <div key={`month-header-${month}`} className="year-grid__day-header">

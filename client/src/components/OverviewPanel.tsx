@@ -1,13 +1,24 @@
 import { useState } from "react";
-import { MoodLegend } from "./MoodLegend.jsx";
-import { InsightPills } from "./InsightPills.jsx";
-import { MoodGrid } from "./MoodGrid.jsx";
-import { MoodChart } from "./MoodChart.jsx";
-import { YearMoodGrid } from "./YearMoodGrid.jsx";
-import { hasYearData } from "../utils/data.js";
+import { MoodLegend } from "./MoodLegend";
+import { InsightPills } from "./InsightPills";
+import { MoodGrid } from "./MoodGrid";
+import { MoodChart } from "./MoodChart";
+import { YearMoodGrid } from "./YearMoodGrid";
+import type { AggregatedRow, StoredEntry } from "../utils/data";
+import { hasYearData } from "../utils/data";
 
-export const OverviewPanel = ({ data, totalDaysTracked, entries, year, todayKey }) => {
-  const [orientation, setOrientation] = useState("months-first");
+type Orientation = "months-first" | "days-first";
+
+type OverviewPanelProps = {
+  data: AggregatedRow[];
+  totalDaysTracked: number;
+  entries: Record<string, StoredEntry>;
+  year: number;
+  todayKey: string;
+};
+
+export const OverviewPanel = ({ data, totalDaysTracked, entries, year, todayKey }: OverviewPanelProps) => {
+  const [orientation, setOrientation] = useState<Orientation>("months-first");
   const hasData = hasYearData(data);
   const toggleOrientation = () =>
     setOrientation((prev) => (prev === "months-first" ? "days-first" : "months-first"));

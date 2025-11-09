@@ -1,22 +1,25 @@
 import { useEffect, useMemo, useState } from "react";
 import "./App.css";
-import { MOODS } from "./constants/moods.js";
-import { aggregateYearData, normalizeEntry, serializeEntry } from "./utils/data.js";
-import { DailyMoodSelector } from "./components/DailyMoodSelector.jsx";
-import { OverviewPanel } from "./components/OverviewPanel.jsx";
+import { MOODS, type MoodKey } from "./constants/moods";
+import type { NormalizedEntry, StoredEntry } from "./utils/data";
+import { aggregateYearData, normalizeEntry, serializeEntry } from "./utils/data";
+import { DailyMoodSelector } from "./components/DailyMoodSelector";
+import { OverviewPanel } from "./components/OverviewPanel";
 
 const ENTRIES_STORAGE_KEY = "mood-tracker.daily.entries";
 
-const loadEntries = () => {
+type EntriesMap = Record<string, StoredEntry>;
+
+const loadEntries = (): EntriesMap => {
   if (typeof window === "undefined") return {};
   try {
-    return JSON.parse(window.localStorage.getItem(ENTRIES_STORAGE_KEY) ?? "{}");
+    return JSON.parse(window.localStorage.getItem(ENTRIES_STORAGE_KEY) ?? "{}") as EntriesMap;
   } catch {
     return {};
   }
 };
 
-const saveEntries = (entries) => {
+const saveEntries = (entries: EntriesMap) => {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(ENTRIES_STORAGE_KEY, JSON.stringify(entries));
 };
@@ -32,7 +35,7 @@ const formatTodayLabel = () =>
   new Intl.DateTimeFormat("en-US", { weekday: "long", month: "long", day: "numeric" }).format(new Date());
 
 const App = () => {
-  const [entries, setEntries] = useState(() => loadEntries());
+  const [entries, setEntries] = useState<EntriesMap>(() => loadEntries());
   const [showOverview, setShowOverview] = useState(false);
 
   useEffect(() => {
@@ -40,7 +43,7 @@ const App = () => {
   }, [entries]);
 
   const todayKey = getTodayKey();
-  const todayEntry = normalizeEntry(entries[todayKey]);
+  const todayEntry: NormalizedEntry = normalizeEntry(entries[todayKey]) ?? { first: null, second: null };
   const primaryMood = todayEntry?.first ?? null;
   const secondaryMood = todayEntry?.second ?? null;
   const isDualDay = Boolean(todayEntry?.second);
@@ -56,9 +59,9 @@ const App = () => {
     [entries, currentYear]
   );
 
-  const updateTodayEntry = (updater) => {
+  const updateTodayEntry = (updater: (entry: NonNullable<NormalizedEntry>) => NormalizedEntry) => {
     setEntries((prev) => {
-      const normalized = normalizeEntry(prev[todayKey]) ?? { first: null, second: null };
+      const normalized: NonNullable<NormalizedEntry> = normalizeEntry(prev[todayKey]) ?? { first: null, second: null };
       const next = updater(normalized);
       if (!next || !next.first) {
         const { [todayKey]: _omitted, ...rest } = prev;
@@ -73,21 +76,21 @@ const App = () => {
     });
   };
 
-  const handlePrimarySelect = (moodKey) => {
+  const handlePrimarySelect = (moodKey: MoodKey) => {
     updateTodayEntry((entry) => ({
       first: moodKey,
       second: entry.second,
     }));
   };
 
-  const handleSecondarySelect = (moodKey) => {
+  const handleSecondarySelect = (moodKey: MoodKey) => {
     updateTodayEntry((entry) => ({
       first: entry.first ?? moodKey,
       second: moodKey,
     }));
   };
 
-  const handleToggleDual = (checked) => {
+  const handleToggleDual = (checked: boolean) => {
     updateTodayEntry((entry) => {
       if (!entry.first) return entry;
       return {

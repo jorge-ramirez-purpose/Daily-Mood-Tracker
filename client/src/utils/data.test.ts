@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { aggregateYearData, hasYearData, normalizeEntry, serializeEntry } from "./data.js";
+import { aggregateYearData, hasYearData, normalizeEntry, serializeEntry } from "./data";
 
 test("normalizeEntry handles strings and split objects", () => {
   assert.deepEqual(normalizeEntry("Good"), { first: "Good", second: null });

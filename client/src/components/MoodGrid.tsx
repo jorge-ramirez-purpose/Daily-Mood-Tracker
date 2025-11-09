@@ -1,15 +1,21 @@
 import { Fragment, useMemo } from "react";
-import { MOODS } from "../constants/moods.js";
+import { MOODS, type MoodKey } from "../constants/moods";
+import type { AggregatedRow } from "../utils/data";
 
-const formatValue = (value) => {
-  if (Number.isInteger(value)) return value;
-  return Number(value ?? 0)
-    .toFixed(1)
-    .replace(/\.0$/, "");
+const formatValue = (value: number) => {
+  if (Number.isInteger(value)) return value.toString();
+  return value.toFixed(1).replace(/\.0$/, "");
 };
 
-export const MoodGrid = ({ data }) => {
-  const maxPerMonth = useMemo(() => data.map((row) => Math.max(...MOODS.map((mood) => row[mood.key]))), [data]);
+type MoodGridProps = {
+  data: AggregatedRow[];
+};
+
+export const MoodGrid = ({ data }: MoodGridProps) => {
+  const maxPerMonth = useMemo(
+    () => data.map((row) => Math.max(...MOODS.map((mood) => row[mood.key]))),
+    [data]
+  );
 
   return (
     <div className="grid-wrapper">

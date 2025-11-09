@@ -1,6 +1,12 @@
-import { MOODS } from "../constants/moods.js";
+import { MOODS } from "../constants/moods";
+import type { AggregatedRow } from "../utils/data";
 
-export const InsightPills = ({ data, totalDaysTracked }) => {
+type InsightPillsProps = {
+  data: AggregatedRow[];
+  totalDaysTracked: number;
+};
+
+export const InsightPills = ({ data, totalDaysTracked }: InsightPillsProps) => {
   if (!data.length) return null;
 
   const scores = data.map((row) => ({
