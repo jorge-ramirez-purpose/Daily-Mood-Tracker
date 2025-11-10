@@ -52,7 +52,7 @@ export const DailyMoodSelector = ({
 }: DailyMoodSelectorProps) => (
   <section className="selector">
     <p className="selector__eyebrow">{todayLabel}</p>
-    <h1 className="selector__title">How&apos;s your mood today?</h1>
+    <h1 className="selector__title">How's your mood today?</h1>
 
     <div className="selector__group">
       {isDual && <p className="selector__group-label">First half of the day</p>}
@@ -76,6 +76,6 @@ export const DailyMoodSelector = ({
       </div>
     )}
 
-    <p className="selector__caption">Tap a color to capture today&apos;s vibe. We&apos;ll handle the rest.</p>
+    <p className="selector__caption">Tap a color to capture today's vibe. We'll handle the rest.</p>
   </section>
 );
