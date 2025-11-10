@@ -1,4 +1,4 @@
-import type { MoodConfig, MoodKey, MonthLabel } from "../constants/moods";
+import type { MoodKey, MonthLabel } from "../constants/moods";
 import { MOODS, MONTHS } from "../constants/moods";
 
 export type StoredEntry =
