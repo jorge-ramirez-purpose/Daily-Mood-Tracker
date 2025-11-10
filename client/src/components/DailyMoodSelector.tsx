@@ -55,7 +55,7 @@ export const DailyMoodSelector = ({
     <h1 className="selector__title">How&apos;s your mood today?</h1>
 
     <div className="selector__group">
-      <p className="selector__group-label">First half of the day</p>
+      {isDual && <p className="selector__group-label">First half of the day</p>}
       <SelectorButtons moods={moods} selectedMood={primaryMood} onSelect={onSelectPrimary} />
     </div>
 
