@@ -19,6 +19,7 @@ import {
   buildNovemberMockMap,
 } from "./data/monthMocks";
 import { formatTodayLabel, getTodayKey, loadEntries, saveEntries, type EntriesMap } from "./utils/appHelpers";
+import { parseDateKey } from "./utils/dateHelpers";
 
 const ENTRIES_STORAGE_KEY = "mood-tracker.daily.entries";
 const CURRENT_YEAR = new Date().getFullYear();
@@ -41,17 +42,41 @@ const App = () => {
     loadEntries(typeof window === "undefined" ? null : window.localStorage, ENTRIES_STORAGE_KEY, DEFAULT_ENTRIES)
   );
   const [showOverview, setShowOverview] = useState(false);
+  const todayKey = getTodayKey();
+  const [selectedDateKey, setSelectedDateKey] = useState(todayKey);
 
   useEffect(() => {
     const storage = typeof window === "undefined" ? null : window.localStorage;
     saveEntries(storage, ENTRIES_STORAGE_KEY, entries);
   }, [entries]);
 
-  const todayKey = getTodayKey();
-  const todayEntry: NormalizedEntry = normalizeEntry(entries[todayKey]) ?? { first: null, second: null };
-  const primaryMood = todayEntry?.first ?? null;
-  const secondaryMood = todayEntry?.second ?? null;
-  const isDualDay = Boolean(todayEntry?.second);
+  useEffect(() => {
+    if (selectedDateKey === todayKey) return undefined;
+    if (typeof window === "undefined" || typeof document === "undefined") return undefined;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target;
+      if (!(target instanceof Element)) {
+        setSelectedDateKey(todayKey);
+        return;
+      }
+
+      const isInsideInteractiveZone = target.closest(".year-grid") || target.closest(".selector");
+      if (isInsideInteractiveZone) return;
+
+      setSelectedDateKey(todayKey);
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+    };
+  }, [selectedDateKey, todayKey]);
+
+  const selectedEntry: NormalizedEntry = normalizeEntry(entries[selectedDateKey]) ?? { first: null, second: null };
+  const primaryMood = selectedEntry?.first ?? null;
+  const secondaryMood = selectedEntry?.second ?? null;
+  const isDualDay = Boolean(selectedEntry?.second);
   const currentYear = CURRENT_YEAR;
 
   const yearData = useMemo(() => aggregateYearData(entries, currentYear), [entries, currentYear]);
@@ -64,25 +89,25 @@ const App = () => {
     [entries, currentYear]
   );
 
-  const updateTodayEntry = (updater: (entry: NonNullable<NormalizedEntry>) => NormalizedEntry) => {
+  const updateEntryForDate = (dateKey: string, updater: (entry: NonNullable<NormalizedEntry>) => NormalizedEntry) => {
     setEntries((prev) => {
-      const normalized: NonNullable<NormalizedEntry> = normalizeEntry(prev[todayKey]) ?? { first: null, second: null };
+      const normalized: NonNullable<NormalizedEntry> = normalizeEntry(prev[dateKey]) ?? { first: null, second: null };
       const next = updater(normalized);
       if (!next || !next.first) {
-        const { [todayKey]: _omitted, ...rest } = prev;
+        const { [dateKey]: _omitted, ...rest } = prev;
         return rest;
       }
       const serialized = serializeEntry(next);
       if (!serialized) {
-        const { [todayKey]: _omit, ...rest } = prev;
+        const { [dateKey]: _omit, ...rest } = prev;
         return rest;
       }
-      return { ...prev, [todayKey]: serialized };
+      return { ...prev, [dateKey]: serialized };
     });
   };
 
   const handlePrimarySelect = (moodKey: MoodKey) => {
-    updateTodayEntry((entry) => {
+    updateEntryForDate(selectedDateKey, (entry) => {
       if (entry.first === moodKey) {
         return { first: null, second: null };
       }
@@ -94,7 +119,7 @@ const App = () => {
   };
 
   const handleSecondarySelect = (moodKey: MoodKey) => {
-    updateTodayEntry((entry) => {
+    updateEntryForDate(selectedDateKey, (entry) => {
       if (entry.second === moodKey) {
         return { first: entry.first, second: null };
       }
@@ -106,7 +131,7 @@ const App = () => {
   };
 
   const handleToggleDual = (checked: boolean) => {
-    updateTodayEntry((entry) => {
+    updateEntryForDate(selectedDateKey, (entry) => {
       if (!entry.first) return entry;
       return {
         first: entry.first,
@@ -114,6 +139,8 @@ const App = () => {
       };
     });
   };
+
+  const selectedDateLabel = useMemo(() => formatTodayLabel(parseDateKey(selectedDateKey)), [selectedDateKey]);
 
   return (
     <div className="app">
@@ -123,10 +150,11 @@ const App = () => {
           primaryMood={primaryMood}
           secondaryMood={secondaryMood}
           isDual={isDualDay}
+          isTodaySelection={selectedDateKey === todayKey}
           onSelectPrimary={handlePrimarySelect}
           onSelectSecondary={handleSecondarySelect}
           onToggleDual={handleToggleDual}
-          todayLabel={formatTodayLabel()}
+          selectedDateLabel={selectedDateLabel}
         />
 
         <button type="button" className="overview-toggle" onClick={() => setShowOverview((prev) => !prev)}>
@@ -140,6 +168,8 @@ const App = () => {
             entries={entries}
             year={currentYear}
             todayKey={todayKey}
+            selectedDateKey={selectedDateKey}
+            onSelectDate={setSelectedDateKey}
           />
         )}
       </div>

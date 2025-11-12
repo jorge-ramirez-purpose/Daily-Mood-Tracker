@@ -34,10 +34,11 @@ type DailyMoodSelectorProps = {
   primaryMood: MoodKey | null;
   secondaryMood: MoodKey | null;
   isDual: boolean;
+  isTodaySelection: boolean;
   onSelectPrimary: (mood: MoodKey) => void;
   onSelectSecondary: (mood: MoodKey) => void;
   onToggleDual: (checked: boolean) => void;
-  todayLabel: string;
+  selectedDateLabel: string;
 };
 
 export const DailyMoodSelector = ({
@@ -45,14 +46,17 @@ export const DailyMoodSelector = ({
   primaryMood,
   secondaryMood,
   isDual,
+  isTodaySelection,
   onSelectPrimary,
   onSelectSecondary,
   onToggleDual,
-  todayLabel,
+  selectedDateLabel,
 }: DailyMoodSelectorProps) => (
   <section className="selector">
-    <p className="selector__eyebrow">{todayLabel}</p>
-    <h1 className="selector__title">How's your mood today?</h1>
+    <p className="selector__eyebrow">{isTodaySelection ? `Today · ${selectedDateLabel}` : selectedDateLabel}</p>
+    <h1 className="selector__title">
+      {isTodaySelection ? "How's your mood today?" : `Update mood for ${selectedDateLabel}`}
+    </h1>
 
     <div className="selector__group">
       {isDual && <p className="selector__group-label">First half of the day</p>}

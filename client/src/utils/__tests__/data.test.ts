@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { aggregateYearData, hasYearData, normalizeEntry, serializeEntry } from "./data";
+import { aggregateYearData, hasYearData, normalizeEntry, serializeEntry } from "../data";
+import type { StoredEntry } from "../data";
 
 test("normalizeEntry handles strings and split objects", () => {
   assert.deepEqual(normalizeEntry("Good"), { first: "Good", second: null });
@@ -26,11 +27,14 @@ test("aggregateYearData counts whole and split days correctly", () => {
     "2024-01-02": { first: "Good", second: "Bad" },
     "2024-02-10": { first: "Awful" },
     "2023-03-01": "Okay", // ignored because of year mismatch
-  };
+  } as const satisfies Record<string, StoredEntry>;
 
   const aggregated = aggregateYearData(entries, 2024);
   const january = aggregated.find((row) => row.month === "Jan");
   const february = aggregated.find((row) => row.month === "Feb");
+
+  assert.ok(january, "Expected January row to be present");
+  assert.ok(february, "Expected February row to be present");
 
   assert.equal(january.Great, 1);
   assert.equal(january.Good, 0.5);

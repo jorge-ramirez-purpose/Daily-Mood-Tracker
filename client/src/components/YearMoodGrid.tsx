@@ -7,6 +7,7 @@ type Orientation = "months-first" | "days-first";
 
 type DayCell = {
   day: number;
+  dateKey: string | null;
   isDisabled: boolean;
   firstMoodKey: MoodKey | null;
   secondMoodKey: MoodKey | null;
@@ -23,6 +24,8 @@ type YearMoodGridProps = {
   year: number;
   todayKey: string;
   orientation?: Orientation;
+  selectedDateKey?: string;
+  onSelectDate?: (dateKey: string) => void;
 };
 
 const colorMap: Record<MoodKey, string> = Object.fromEntries(MOODS.map((mood) => [mood.key, mood.color])) as Record<
@@ -40,15 +43,26 @@ const buildDay = (
   dayNumber: number,
   todayKey: string,
   entry: NormalizedEntry
-): DayCell => ({
-  day: dayNumber,
-  isDisabled: false,
-  firstMoodKey: entry?.first ?? null,
-  secondMoodKey: entry?.second ?? null,
-  isToday: `${year}-${pad(monthIndex + 1)}-${pad(dayNumber)}` === todayKey,
-});
+): DayCell => {
+  const dateKey = `${year}-${pad(monthIndex + 1)}-${pad(dayNumber)}`;
+  return {
+    day: dayNumber,
+    dateKey,
+    isDisabled: false,
+    firstMoodKey: entry?.first ?? null,
+    secondMoodKey: entry?.second ?? null,
+    isToday: dateKey === todayKey,
+  };
+};
 
-export const YearMoodGrid = ({ entries = {}, year, todayKey, orientation = "months-first" }: YearMoodGridProps) => {
+export const YearMoodGrid = ({
+  entries = {},
+  year,
+  todayKey,
+  orientation = "months-first",
+  selectedDateKey,
+  onSelectDate,
+}: YearMoodGridProps) => {
   const months = useMemo<MonthData[]>(
     () =>
       MONTHS.map((month, monthIndex) => {
@@ -56,7 +70,14 @@ export const YearMoodGrid = ({ entries = {}, year, todayKey, orientation = "mont
         const days: DayCell[] = Array.from({ length: 31 }, (_, dayIndex) => {
           const dayNumber = dayIndex + 1;
           if (dayNumber > limit) {
-            return { day: dayNumber, isDisabled: true, firstMoodKey: null, secondMoodKey: null, isToday: false };
+            return {
+              day: dayNumber,
+              dateKey: null,
+              isDisabled: true,
+              firstMoodKey: null,
+              secondMoodKey: null,
+              isToday: false,
+            };
           }
 
           const dateKey = `${year}-${pad(monthIndex + 1)}-${pad(dayNumber)}`;
@@ -77,7 +98,10 @@ export const YearMoodGrid = ({ entries = {}, year, todayKey, orientation = "mont
     let cellClass = "year-grid__cell";
     if (day.isDisabled) cellClass += " year-grid__cell--disabled";
     else if (!day.firstMoodKey) cellClass += " year-grid__cell--empty";
+    const activeKey = selectedDateKey ?? todayKey;
+    const isSelected = Boolean(activeKey && day.dateKey && activeKey === day.dateKey);
     if (day.isToday) cellClass += " year-grid__cell--today";
+    if (isSelected) cellClass += " year-grid__cell--selected";
     if (secondaryColor) cellClass += " year-grid__cell--split";
 
     const style: CSSProperties =
@@ -96,7 +120,24 @@ export const YearMoodGrid = ({ entries = {}, year, todayKey, orientation = "mont
         : `${monthLabel} ${day.day}: ${day.firstMoodKey}`
       : `${monthLabel} ${day.day}: no entry`;
 
-    return <div key={`${monthLabel}-${day.day}`} className={cellClass} title={title} style={style} />;
+    const isInteractive = Boolean(onSelectDate) && !day.isDisabled && Boolean(day.dateKey);
+    const handleSelect = () => {
+      if (!isInteractive || !day.dateKey) return;
+      onSelectDate?.(day.dateKey);
+    };
+
+    return (
+      <button
+        key={`${monthLabel}-${day.day}`}
+        type="button"
+        className={cellClass}
+        title={title}
+        style={style}
+        onClick={isInteractive ? handleSelect : undefined}
+        aria-pressed={isInteractive ? isSelected : undefined}
+        disabled={day.isDisabled}
+      />
+    );
   };
 
   const renderMonthsFirst = () => (

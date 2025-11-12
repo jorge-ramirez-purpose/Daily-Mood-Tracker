@@ -15,9 +15,19 @@ type OverviewPanelProps = {
   entries: Record<string, StoredEntry>;
   year: number;
   todayKey: string;
+  selectedDateKey: string;
+  onSelectDate: (dateKey: string) => void;
 };
 
-export const OverviewPanel = ({ data, totalDaysTracked, entries, year, todayKey }: OverviewPanelProps) => {
+export const OverviewPanel = ({
+  data,
+  totalDaysTracked,
+  entries,
+  year,
+  todayKey,
+  selectedDateKey,
+  onSelectDate,
+}: OverviewPanelProps) => {
   const [orientation, setOrientation] = useState<Orientation>("months-first");
   const hasData = hasYearData(data);
   const toggleOrientation = () => setOrientation((prev) => (prev === "months-first" ? "days-first" : "months-first"));
@@ -44,7 +54,14 @@ export const OverviewPanel = ({ data, totalDaysTracked, entries, year, todayKey 
                 {toggleLabel}
               </button>
             </div>
-            <YearMoodGrid entries={entries} year={year} todayKey={todayKey} orientation={orientation} />
+            <YearMoodGrid
+              entries={entries}
+              year={year}
+              todayKey={todayKey}
+              orientation={orientation}
+              selectedDateKey={selectedDateKey}
+              onSelectDate={onSelectDate}
+            />
           </div>
           <div className="overview__panel">
             <MoodGrid data={data} />
