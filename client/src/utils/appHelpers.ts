@@ -1,6 +1,4 @@
-import type { StoredEntry } from "./data";
-
-export type EntriesMap = Record<string, StoredEntry>;
+import type { EntriesMap, StoredEntry } from "./types";
 
 export const getTodayKey = (date: Date = new Date()): string => {
   const timezoneOffset = date.getTimezoneOffset() * 60000;

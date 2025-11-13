@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { EntriesMap, formatTodayLabel, getTodayKey, loadEntries, saveEntries } from "../appHelpers";
+import { formatTodayLabel, getTodayKey, loadEntries, saveEntries } from "../appHelpers";
+import type { EntriesMap } from "../types";
 
 const createMockStorage = (initial: Record<string, string> = {}) => {
   const store = { ...initial };

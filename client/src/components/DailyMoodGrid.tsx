@@ -1,6 +1,6 @@
 import { useMemo, type CSSProperties } from "react";
 import { MOODS, MONTHS, type MoodKey, type MonthLabel } from "../constants/moods";
-import type { NormalizedEntry, StoredEntry } from "../utils/data";
+import type { NormalizedEntry, StoredEntry } from "../utils/types";
 import { normalizeEntry } from "../utils/data";
 
 type Orientation = "months-first" | "days-first";
@@ -19,7 +19,7 @@ type MonthData = {
   days: DayCell[];
 };
 
-type YearMoodGridProps = {
+type TProps = {
   entries: Record<string, StoredEntry>;
   year: number;
   todayKey: string;
@@ -55,14 +55,14 @@ const buildDay = (
   };
 };
 
-export const YearMoodGrid = ({
+export const DailyMoodGrid = ({
   entries = {},
   year,
   todayKey,
   orientation = "months-first",
   selectedDateKey,
   onSelectDate,
-}: YearMoodGridProps) => {
+}: TProps) => {
   const months = useMemo<MonthData[]>(
     () =>
       MONTHS.map((month, monthIndex) => {

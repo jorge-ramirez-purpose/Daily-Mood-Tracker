@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { ResponsiveContainer, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Bar } from "recharts";
 import { MOODS, type MoodKey } from "../constants/moods";
-import type { AggregatedRow } from "../utils/data";
+import type { AggregatedRow } from "../utils/types";
 
 type StackedBarDatum = {
   month: string;
@@ -16,11 +16,11 @@ const toStackedBarData = (yearData: AggregatedRow[]): StackedBarDatum[] =>
     }, {} as Record<MoodKey, number>),
   }));
 
-type MoodChartProps = {
+type TProps = {
   data: AggregatedRow[];
 };
 
-export const MoodChart = ({ data }: MoodChartProps) => {
+export const MonthlyMoodChart = ({ data }: TProps) => {
   const chartData = useMemo(() => toStackedBarData(data), [data]);
 
   return (

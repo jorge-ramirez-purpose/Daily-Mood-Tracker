@@ -1,23 +1,6 @@
-import type { MoodKey, MonthLabel } from "../constants/moods";
+import type { MoodKey } from "../constants/moods";
 import { MOODS, MONTHS } from "../constants/moods";
-
-export type StoredEntry =
-  | null
-  | MoodKey
-  | {
-      first?: MoodKey | null;
-      second?: MoodKey | null;
-      primary?: MoodKey | null;
-      secondary?: MoodKey | null;
-      mood?: MoodKey | null;
-    };
-
-export type NormalizedEntry = { first: MoodKey | null; second: MoodKey | null } | null;
-
-export type AggregatedRow = {
-  month: MonthLabel;
-  monthIndex: number;
-} & Record<MoodKey, number>;
+import type { AggregatedRow, NormalizedEntry, StoredEntry } from "./types";
 
 const baseMoodCounts = MOODS.reduce<Record<MoodKey, number>>((acc, mood) => {
   acc[mood.key] = 0;

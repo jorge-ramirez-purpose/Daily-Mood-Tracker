@@ -1,6 +1,6 @@
 import { Fragment, useMemo } from "react";
 import { MOODS } from "../constants/moods";
-import type { AggregatedRow } from "../utils/data";
+import type { AggregatedRow } from "../utils/types";
 
 const formatValue = (value: number) => {
   if (Number.isInteger(value)) return value.toString();
@@ -22,11 +22,11 @@ const mixWithWhite = (hex: string, ratio: number) => {
   return `rgb(${mix(r)}, ${mix(g)}, ${mix(b)})`;
 };
 
-type MoodGridProps = {
+type TProps = {
   data: AggregatedRow[];
 };
 
-export const MoodGrid = ({ data }: MoodGridProps) => {
+export const MonthlyMoodAccumulation = ({ data }: TProps) => {
   const maxPerMonth = useMemo(() => data.map((row) => Math.max(...MOODS.map((mood) => row[mood.key]))), [data]);
 
   return (

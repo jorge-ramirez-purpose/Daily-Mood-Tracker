@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import "./App.css";
 import { MOODS, type MoodKey } from "./constants/moods";
-import type { NormalizedEntry } from "./utils/data";
+import type { EntriesMap, NormalizedEntry } from "./utils/types";
 import { aggregateYearData, normalizeEntry, serializeEntry } from "./utils/data";
 import { DailyMoodSelector } from "./components/DailyMoodSelector";
 import { OverviewPanel } from "./components/OverviewPanel";
@@ -18,7 +18,7 @@ import {
   buildOctoberMockMap,
   buildNovemberMockMap,
 } from "./data/monthMocks";
-import { formatTodayLabel, getTodayKey, loadEntries, saveEntries, type EntriesMap } from "./utils/appHelpers";
+import { formatTodayLabel, getTodayKey, loadEntries, saveEntries } from "./utils/appHelpers";
 import { parseDateKey } from "./utils/dateHelpers";
 
 const ENTRIES_STORAGE_KEY = "mood-tracker.daily.entries";

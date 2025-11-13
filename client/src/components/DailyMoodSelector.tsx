@@ -1,13 +1,13 @@
 import type { CSSProperties } from "react";
 import type { MoodConfig, MoodKey } from "../constants/moods";
 
-type SelectorButtonsProps = {
+type TProps = {
   moods: readonly MoodConfig[];
   selectedMood: MoodKey | null;
   onSelect: (mood: MoodKey) => void;
 };
 
-const SelectorButtons = ({ moods, selectedMood, onSelect }: SelectorButtonsProps) => (
+const SelectorButtons = ({ moods, selectedMood, onSelect }: TProps) => (
   <div className="selector__options">
     {moods.map((mood) => {
       const isActive = selectedMood === mood.key;

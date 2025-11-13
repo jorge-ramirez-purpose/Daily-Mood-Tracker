@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { aggregateYearData, hasYearData, normalizeEntry, serializeEntry } from "../data";
-import type { StoredEntry } from "../data";
+import { StoredEntry } from "../types";
 
 test("normalizeEntry handles strings and split objects", () => {
   assert.deepEqual(normalizeEntry("Good"), { first: "Good", second: null });

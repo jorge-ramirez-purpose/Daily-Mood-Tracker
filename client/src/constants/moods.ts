@@ -1,19 +1,4 @@
-export const MONTHS = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-] as const;
-
-export type MonthLabel = (typeof MONTHS)[number];
+export const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"] as const;
 
 export const MOODS = [
   { key: "Great", color: "#2563eb" },
@@ -22,6 +7,7 @@ export const MOODS = [
   { key: "Bad", color: "#ef4444" },
   { key: "Awful", color: "#000000" },
 ] as const;
+export type MonthLabel = (typeof MONTHS)[number];
 
 export type MoodKey = (typeof MOODS)[number]["key"];
 export type MoodConfig = (typeof MOODS)[number];

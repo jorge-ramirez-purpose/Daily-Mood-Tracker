@@ -1,7 +1,7 @@
 import { MOODS, type MoodKey } from "../constants/moods";
-import type { AggregatedRow } from "../utils/data";
+import type { AggregatedRow } from "../utils/types";
 
-type InsightPillsProps = {
+type TProps = {
   data: AggregatedRow[];
   totalDaysTracked: number;
   year: number;
@@ -20,7 +20,7 @@ const isCompletedMonth = (trackedDays: number, monthIndex: number, year: number)
   return trackedDays >= totalDaysInMonth;
 };
 
-export const InsightPills = ({ data, totalDaysTracked, year }: InsightPillsProps) => {
+export const InsightPills = ({ data, totalDaysTracked, year }: TProps) => {
   if (!data.length) return null;
 
   const scored = data

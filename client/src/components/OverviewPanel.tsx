@@ -1,15 +1,15 @@
 import { useState } from "react";
 import { MoodLegend } from "./MoodLegend";
 import { InsightPills } from "./InsightPills";
-import { MoodGrid } from "./MoodGrid";
-import { MoodChart } from "./MoodChart";
-import { YearMoodGrid } from "./YearMoodGrid";
-import type { AggregatedRow, StoredEntry } from "../utils/data";
+import { MonthlyMoodAccumulation } from "./MonthlyMoodAccumulation";
+import { MonthlyMoodChart } from "./MonthlyMoodChart";
+import { DailyMoodGrid } from "./DailyMoodGrid";
+import type { AggregatedRow, StoredEntry } from "../utils/types";
 import { hasYearData } from "../utils/data";
 
 type Orientation = "months-first" | "days-first";
 
-type OverviewPanelProps = {
+type TProps = {
   data: AggregatedRow[];
   totalDaysTracked: number;
   entries: Record<string, StoredEntry>;
@@ -27,7 +27,7 @@ export const OverviewPanel = ({
   todayKey,
   selectedDateKey,
   onSelectDate,
-}: OverviewPanelProps) => {
+}: TProps) => {
   const [orientation, setOrientation] = useState<Orientation>("months-first");
   const hasData = hasYearData(data);
   const toggleOrientation = () => setOrientation((prev) => (prev === "months-first" ? "days-first" : "months-first"));
@@ -54,7 +54,7 @@ export const OverviewPanel = ({
                 {toggleLabel}
               </button>
             </div>
-            <YearMoodGrid
+            <DailyMoodGrid
               entries={entries}
               year={year}
               todayKey={todayKey}
@@ -64,11 +64,11 @@ export const OverviewPanel = ({
             />
           </div>
           <div className="overview__panel">
-            <MoodGrid data={data} />
+            <MonthlyMoodAccumulation data={data} />
           </div>
           <div className="overview__panel">
             <h3 className="section-title">Distribution by month</h3>
-            <MoodChart data={data} />
+            <MonthlyMoodChart data={data} />
           </div>
         </>
       ) : (

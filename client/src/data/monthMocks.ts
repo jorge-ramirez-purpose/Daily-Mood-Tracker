@@ -1,5 +1,5 @@
 import type { MoodKey } from "../constants/moods";
-import type { StoredEntry } from "../utils/data";
+import type { StoredEntry } from "../utils/types";
 
 const MOOD_BY_DIGIT: Record<string, MoodKey> = {
   "5": "Great",
