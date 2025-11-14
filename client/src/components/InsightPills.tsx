@@ -1,18 +1,11 @@
-import { MOODS, type MoodKey } from "../constants/moods";
+import { MOODS } from "../constants/moods";
+import { MOOD_WEIGHTS } from "../constants/moodWeights";
 import type { AggregatedRow } from "../utils/types";
 
 type TProps = {
   data: AggregatedRow[];
   totalDaysTracked: number;
   year: number;
-};
-
-const MOOD_WEIGHTS: Record<MoodKey, number> = {
-  Great: 2,
-  Good: 1,
-  Okay: 0.5,
-  Bad: -1,
-  Awful: -2,
 };
 
 const isCompletedMonth = (trackedDays: number, monthIndex: number, year: number) => {

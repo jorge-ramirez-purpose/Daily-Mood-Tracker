@@ -179,5 +179,22 @@ export const DailyMoodGrid = ({
     </div>
   );
 
-  return <div className="year-grid">{orientation === "months-first" ? renderMonthsFirst() : renderDaysFirst()}</div>;
+  return (
+    <div className={`year-grid year-grid--${orientation}`}>
+      <div
+        className={`year-grid__viewport year-grid__viewport--months ${
+          orientation === "months-first" ? "year-grid__viewport--active" : ""
+        }`}
+      >
+        {renderMonthsFirst()}
+      </div>
+      <div
+        className={`year-grid__viewport year-grid__viewport--days ${
+          orientation === "days-first" ? "year-grid__viewport--active" : ""
+        }`}
+      >
+        {renderDaysFirst()}
+      </div>
+    </div>
+  );
 };

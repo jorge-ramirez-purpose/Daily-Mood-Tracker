@@ -64,7 +64,7 @@ export const OverviewPanel = ({
             />
           </div>
           <div className="overview__panel">
-            <MonthlyMoodAccumulation data={data} />
+            <MonthlyMoodAccumulation data={data} year={year} />
           </div>
           <div className="overview__panel">
             <h3 className="section-title">Distribution by month</h3>
