@@ -1,0 +1,25 @@
+# Making Daily-Mood-Tracker Live
+
+To bring the tracker online, you’ll need a backend/API layer, persistent storage, and basic authentication.
+
+## Backend & Database
+- Introduce a server that can ingest CRUD operations for entries and analytics. Next.js API routes work well with Vercel, but a small Express/Fastify service plus Vite client is also viable.
+- Use a managed database (Vercel Postgres, Neon, Supabase). Define tables for users, mood entries, and optional aggregate caches. Move the existing aggregation logic to the API or compute on demand per request.
+- Expose endpoints like `GET /api/entries?year=2024` and `POST /api/entries` and validate payloads with Zod/Yup.
+- Add a data-fetching layer in the client (React Query/SWR) for caching, optimistic updates, and background sync.
+
+## Authentication
+- Plan for auth immediately so users’ logs stay private. Implement sessions with NextAuth, Clerk, Auth0, or Supabase Auth.
+- Attach each entry to a user id and require authentication in every API route.
+- Store sessions via secure HTTP-only cookies and enforce per-user data access.
+
+## Deployment on Vercel
+- Consider migrating to Next.js so the frontend and API deploy together. Otherwise, host the backend elsewhere (Render, Fly.io) and keep the frontend static on Vercel.
+- Manage environment variables (DB URLs, secrets) through Vercel’s dashboard and use Prisma/Drizzle/Knex migrations to evolve schema safely.
+- Add automated builds/tests, and set up preview deployments for feature branches.
+
+## Suggested Next Steps
+1. Pick the hosting stack (Next.js on Vercel vs. separate frontend + API) and a managed DB.
+2. Implement API routes for entry CRUD operations and update the client to load/save via HTTP.
+3. Add authentication so users must log in and all data is scoped to their account.
+4. Configure migrations and environment variables, then deploy an initial version to Vercel to validate end-to-end.
