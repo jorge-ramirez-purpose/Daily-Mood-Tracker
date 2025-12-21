@@ -196,11 +196,59 @@ const App = () => {
     URL.revokeObjectURL(url);
   };
 
+  const handleRestore = () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".json";
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+
+      if (!file.name.endsWith(".json")) {
+        alert("Please select a valid JSON file");
+        return;
+      }
+
+      try {
+        const text = await file.text();
+        const data = JSON.parse(text);
+
+        if (!data.entries || typeof data.entries !== "object") {
+          alert("Invalid backup file format: missing or invalid entries");
+          return;
+        }
+
+        const confirmRestore = window.confirm(
+          `This will restore ${Object.keys(data.entries).length} entries and replace your current data. Continue?`
+        );
+
+        if (!confirmRestore) return;
+
+        const storage = typeof window === "undefined" ? null : window.localStorage;
+        if (!storage) return;
+
+        storage.setItem(ENTRIES_STORAGE_KEY, JSON.stringify(data.entries));
+        setEntries(data.entries);
+        setSelectedYear(CURRENT_YEAR);
+        setSelectedDateKey(todayKey);
+        alert("Data restored successfully!");
+      } catch (error) {
+        alert(`Failed to restore backup: ${error instanceof Error ? error.message : "Invalid JSON file"}`);
+      }
+    };
+    input.click();
+  };
+
   return (
     <div className="app">
-      <button type="button" className="backup-button" onClick={handleBackup} title="Backup data">
-        Backup
-      </button>
+      <div className="backup-restore-buttons">
+        <button type="button" className="backup-button" onClick={handleBackup} title="Backup data">
+          Backup
+        </button>
+        <button type="button" className="restore-button" onClick={handleRestore} title="Restore from backup">
+          Restore
+        </button>
+      </div>
 
       <div className="app__container">
         <DailyMoodSelector
