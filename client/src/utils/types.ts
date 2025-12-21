@@ -9,9 +9,10 @@ export type StoredEntry =
       primary?: MoodKey | null;
       secondary?: MoodKey | null;
       mood?: MoodKey | null;
+      note?: string | null;
     };
 
-export type NormalizedEntry = { first: MoodKey | null; second: MoodKey | null } | null;
+export type NormalizedEntry = { first: MoodKey | null; second: MoodKey | null; note: string | null } | null;
 
 export type AggregatedRow = {
   month: MonthLabel;

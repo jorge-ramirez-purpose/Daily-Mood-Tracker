@@ -4,21 +4,21 @@ import { aggregateYearData, hasYearData, normalizeEntry, serializeEntry } from "
 import { StoredEntry } from "../types";
 
 test("normalizeEntry handles strings and split objects", () => {
-  assert.deepEqual(normalizeEntry("Good"), { first: "Good", second: null });
+  assert.deepEqual(normalizeEntry("Good"), { first: "Good", second: null, note: null });
 
-  assert.deepEqual(normalizeEntry({ first: "Okay", second: "Bad" }), { first: "Okay", second: "Bad" });
+  assert.deepEqual(normalizeEntry({ first: "Okay", second: "Bad" }), { first: "Okay", second: "Bad", note: null });
 
-  assert.deepEqual(normalizeEntry({ primary: "Great", secondary: "Good" }), { first: "Great", second: "Good" });
+  assert.deepEqual(normalizeEntry({ primary: "Great", secondary: "Good" }), { first: "Great", second: "Good", note: null });
 
   // When only a secondary mood is supplied, treat it as the primary mood.
-  assert.deepEqual(normalizeEntry({ second: "Awful" }), { first: "Awful", second: null });
+  assert.deepEqual(normalizeEntry({ second: "Awful" }), { first: "Awful", second: null, note: null });
 
   assert.equal(normalizeEntry(null), null);
 });
 
 test("serializeEntry collapses to string when there is no split", () => {
-  assert.equal(serializeEntry({ first: "Great", second: null }), "Great");
-  assert.deepEqual(serializeEntry({ first: "Okay", second: "Bad" }), { first: "Okay", second: "Bad" });
+  assert.equal(serializeEntry({ first: "Great", second: null, note: null }), "Great");
+  assert.deepEqual(serializeEntry({ first: "Okay", second: "Bad", note: null }), { first: "Okay", second: "Bad" });
 });
 
 test("aggregateYearData counts whole and split days correctly", () => {
@@ -50,4 +50,69 @@ test("hasYearData detects when any month has logged entries", () => {
 
   const withData = aggregateYearData({ "2024-04-15": "Okay" }, 2024);
   assert.equal(hasYearData(withData), true);
+});
+
+test("normalizeEntry handles note field", () => {
+  assert.deepEqual(
+    normalizeEntry({ first: "Good", note: "Great day!" }),
+    { first: "Good", second: null, note: "Great day!" }
+  );
+
+  assert.deepEqual(
+    normalizeEntry({ first: "Okay", second: "Bad", note: "Mixed feelings" }),
+    { first: "Okay", second: "Bad", note: "Mixed feelings" }
+  );
+
+  // Backward compatibility: entries without notes get note: null
+  assert.deepEqual(
+    normalizeEntry("Good"),
+    { first: "Good", second: null, note: null }
+  );
+
+  assert.deepEqual(
+    normalizeEntry({ first: "Great" }),
+    { first: "Great", second: null, note: null }
+  );
+});
+
+test("serializeEntry preserves note field", () => {
+  // With note, always use object format
+  assert.deepEqual(
+    serializeEntry({ first: "Great", second: null, note: "Amazing!" }),
+    { first: "Great", note: "Amazing!" }
+  );
+
+  assert.deepEqual(
+    serializeEntry({ first: "Good", second: "Bad", note: "Mixed feelings" }),
+    { first: "Good", second: "Bad", note: "Mixed feelings" }
+  );
+
+  // Without note, use compact format
+  assert.equal(
+    serializeEntry({ first: "Great", second: null, note: null }),
+    "Great"
+  );
+
+  assert.deepEqual(
+    serializeEntry({ first: "Good", second: "Bad", note: null }),
+    { first: "Good", second: "Bad" }
+  );
+});
+
+test("aggregateYearData ignores note field", () => {
+  const entries = {
+    "2024-01-01": { first: "Great", note: "New year!" },
+    "2024-01-02": "Good",
+    "2024-01-03": { first: "Okay", second: "Bad", note: "Up and down" },
+  } as const satisfies Record<string, StoredEntry>;
+
+  const aggregated = aggregateYearData(entries, 2024);
+  const january = aggregated.find((row) => row.month === "Jan");
+
+  assert.ok(january, "Expected January row to be present");
+  assert.equal(january.Great, 1);
+  assert.equal(january.Good, 1);
+  assert.equal(january.Okay, 0.5);
+  assert.equal(january.Bad, 0.5);
+  // Note should not affect aggregation
 });

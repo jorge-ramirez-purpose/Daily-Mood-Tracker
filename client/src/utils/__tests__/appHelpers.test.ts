@@ -51,3 +51,25 @@ test("saveEntries writes JSON to storage", () => {
   saveEntries(storage, "entries", entries);
   assert.deepEqual(storage.dump(), { entries: JSON.stringify(entries) });
 });
+
+test("saveEntries and loadEntries handle note field", () => {
+  const storage = createMockStorage();
+  const entries: EntriesMap = {
+    "2024-03-02": {
+      first: "Okay",
+      second: "Good",
+      note: "Had a productive afternoon"
+    }
+  };
+
+  saveEntries(storage, "entries", entries);
+  const loaded = loadEntries(storage, "entries", {});
+
+  assert.deepEqual(loaded, entries);
+  const entry = loaded["2024-03-02"];
+  if (entry && typeof entry === "object" && "note" in entry) {
+    assert.equal(entry.note, "Had a productive afternoon");
+  } else {
+    assert.fail("Expected entry to have note field");
+  }
+});

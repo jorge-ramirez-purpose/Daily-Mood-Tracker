@@ -35,9 +35,11 @@ type DailyMoodSelectorProps = {
   secondaryMood: MoodKey | null;
   isDual: boolean;
   isTodaySelection: boolean;
+  note: string | null;
   onSelectPrimary: (mood: MoodKey) => void;
   onSelectSecondary: (mood: MoodKey) => void;
   onToggleDual: (checked: boolean) => void;
+  onNoteChange: (note: string) => void;
   selectedDateLabel: string;
 };
 
@@ -47,9 +49,11 @@ export const DailyMoodSelector = ({
   secondaryMood,
   isDual,
   isTodaySelection,
+  note,
   onSelectPrimary,
   onSelectSecondary,
   onToggleDual,
+  onNoteChange,
   selectedDateLabel,
 }: DailyMoodSelectorProps) => (
   <section className="selector">
@@ -79,6 +83,30 @@ export const DailyMoodSelector = ({
         <SelectorButtons moods={moods} selectedMood={secondaryMood} onSelect={onSelectSecondary} />
       </div>
     )}
+
+    <div className="selector__note-group">
+      <label htmlFor="mood-note" className="selector__note-label">
+        Add a note (optional)
+      </label>
+      <textarea
+        id="mood-note"
+        className="selector__note-input"
+        value={note ?? ""}
+        onChange={(e) => onNoteChange(e.target.value)}
+        onBlur={(e) => {
+          const trimmed = e.target.value.trim();
+          if (trimmed !== (note ?? "")) onNoteChange(trimmed);
+        }}
+        placeholder="What made this day special? Any thoughts?"
+        rows={3}
+        maxLength={500}
+      />
+      {note && (
+        <span className="selector__note-counter">
+          {note.length}/500 characters
+        </span>
+      )}
+    </div>
 
     <p className="selector__caption">Tap a color to capture today's vibe. We'll handle the rest.</p>
   </section>

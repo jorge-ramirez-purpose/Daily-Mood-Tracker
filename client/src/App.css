@@ -306,6 +306,56 @@
   opacity: 0.45;
 }
 
+.selector__note-group {
+  margin-top: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  text-align: left;
+}
+
+.selector__note-label {
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  font-weight: 600;
+  margin-left: 0.25rem;
+}
+
+.selector__note-input {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border: 2px solid var(--surface-border);
+  border-radius: 0.75rem;
+  background: var(--surface-muted);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  resize: vertical;
+  min-height: 80px;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.selector__note-input:focus {
+  outline: none;
+  border-color: var(--surface-border-strong);
+  background: var(--surface);
+}
+
+.selector__note-input::placeholder {
+  color: var(--text-soft);
+  opacity: 0.6;
+}
+
+.selector__note-counter {
+  font-size: 0.75rem;
+  color: var(--text-soft);
+  align-self: flex-end;
+  margin-right: 0.25rem;
+}
+
 .overview-toggle {
   align-self: center;
   border: none;
@@ -583,6 +633,10 @@
 
   .overview {
     padding: 1.25rem;
+  }
+
+  .selector__note-input {
+    font-size: 16px;
   }
 }
 

@@ -20,24 +20,33 @@ export const normalizeEntry = (value: StoredEntry): NormalizedEntry => {
   const isObject = typeof value === "object";
 
   if (isString) {
-    return { first: value as MoodKey, second: null };
+    return { first: value as MoodKey, second: null, note: null };
   }
   if (isObject) {
     const first = (value.first ?? value.primary ?? value.mood ?? null) as MoodKey | null;
     const second = (value.second ?? value.secondary ?? null) as MoodKey | null;
+    const note = value.note ?? null;
     if (!first && second) {
-      return { first: second, second: null };
+      return { first: second, second: null, note };
     }
     return {
       first: first ?? null,
       second: second ?? null,
+      note,
     };
   }
   return null;
 };
 
-export const serializeEntry = ({ first, second }: { first: MoodKey | null; second: MoodKey | null }): StoredEntry => {
+export const serializeEntry = ({ first, second, note }: { first: MoodKey | null; second: MoodKey | null; note: string | null }): StoredEntry => {
   if (!first) return null;
+
+  // If there's a note, always return object format
+  if (note) {
+    return { first, ...(second && { second }), note };
+  }
+
+  // Original logic for entries without notes
   if (!second) return first;
   return { first, second };
 };

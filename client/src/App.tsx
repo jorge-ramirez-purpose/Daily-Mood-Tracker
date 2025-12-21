@@ -73,9 +73,10 @@ const App = () => {
     };
   }, [selectedDateKey, todayKey]);
 
-  const selectedEntry: NormalizedEntry = normalizeEntry(entries[selectedDateKey]) ?? { first: null, second: null };
+  const selectedEntry: NormalizedEntry = normalizeEntry(entries[selectedDateKey]) ?? { first: null, second: null, note: null };
   const primaryMood = selectedEntry?.first ?? null;
   const secondaryMood = selectedEntry?.second ?? null;
+  const noteText = selectedEntry?.note ?? null;
   const isDualDay = Boolean(selectedEntry?.second);
   const currentYear = CURRENT_YEAR;
 
@@ -91,7 +92,7 @@ const App = () => {
 
   const updateEntryForDate = (dateKey: string, updater: (entry: NonNullable<NormalizedEntry>) => NormalizedEntry) => {
     setEntries((prev) => {
-      const normalized: NonNullable<NormalizedEntry> = normalizeEntry(prev[dateKey]) ?? { first: null, second: null };
+      const normalized: NonNullable<NormalizedEntry> = normalizeEntry(prev[dateKey]) ?? { first: null, second: null, note: null };
       const next = updater(normalized);
       if (!next || !next.first) {
         const { [dateKey]: _omitted, ...rest } = prev;
@@ -109,11 +110,12 @@ const App = () => {
   const handlePrimarySelect = (moodKey: MoodKey) => {
     updateEntryForDate(selectedDateKey, (entry) => {
       if (entry.first === moodKey) {
-        return { first: null, second: null };
+        return { first: null, second: null, note: entry.note };
       }
       return {
         first: moodKey,
         second: entry.second,
+        note: entry.note,
       };
     });
   };
@@ -121,11 +123,12 @@ const App = () => {
   const handleSecondarySelect = (moodKey: MoodKey) => {
     updateEntryForDate(selectedDateKey, (entry) => {
       if (entry.second === moodKey) {
-        return { first: entry.first, second: null };
+        return { first: entry.first, second: null, note: entry.note };
       }
       return {
         first: entry.first ?? moodKey,
         second: moodKey,
+        note: entry.note,
       };
     });
   };
@@ -136,6 +139,17 @@ const App = () => {
       return {
         first: entry.first,
         second: checked ? entry.second ?? entry.first : null,
+        note: entry.note,
+      };
+    });
+  };
+
+  const handleNoteChange = (note: string) => {
+    updateEntryForDate(selectedDateKey, (entry) => {
+      return {
+        first: entry.first,
+        second: entry.second,
+        note: note === "" ? null : note,
       };
     });
   };
@@ -151,9 +165,11 @@ const App = () => {
           secondaryMood={secondaryMood}
           isDual={isDualDay}
           isTodaySelection={selectedDateKey === todayKey}
+          note={noteText}
           onSelectPrimary={handlePrimarySelect}
           onSelectSecondary={handleSecondarySelect}
           onToggleDual={handleToggleDual}
+          onNoteChange={handleNoteChange}
           selectedDateLabel={selectedDateLabel}
         />
 
