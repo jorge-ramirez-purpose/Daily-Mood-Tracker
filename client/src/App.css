@@ -356,6 +356,74 @@
   margin-right: 0.25rem;
 }
 
+.backup-button {
+  position: fixed;
+  top: 2rem;
+  right: 2rem;
+  border: 1px solid var(--surface-border);
+  background: var(--surface);
+  color: var(--text-primary);
+  border-radius: 999px;
+  padding: 0.75rem 1.75rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 12px 32px var(--surface-shadow), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  backdrop-filter: blur(12px);
+  z-index: 100;
+}
+
+.backup-button:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 16px 40px var(--surface-shadow), 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+.year-selector {
+  align-self: center;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.year-selector__dropdown {
+  appearance: none;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0.5rem 1.75rem 0.5rem 0.5rem;
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.2s ease;
+}
+
+.year-selector__dropdown:hover {
+  color: var(--text-primary);
+}
+
+.year-selector__dropdown:focus {
+  outline: none;
+  color: var(--text-primary);
+}
+
+.year-selector__icon {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--text-soft);
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.year-selector__dropdown:hover + .year-selector__icon,
+.year-selector__dropdown:focus + .year-selector__icon {
+  color: var(--text-muted);
+}
+
 .overview-toggle {
   align-self: center;
   border: none;
@@ -608,6 +676,13 @@
 @media (max-width: 768px) {
   .app {
     padding: 1.5rem 1rem 2.5rem;
+  }
+
+  .backup-button {
+    top: 1rem;
+    right: 1rem;
+    padding: 0.6rem 1.2rem;
+    font-size: 0.8rem;
   }
 
   .app__header {

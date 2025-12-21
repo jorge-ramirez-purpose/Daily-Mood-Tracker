@@ -32,13 +32,15 @@ export const OverviewPanel = ({
   const hasData = hasYearData(data);
   const toggleOrientation = () => setOrientation((prev) => (prev === "months-first" ? "days-first" : "months-first"));
   const toggleLabel = orientation === "months-first" ? "Switch to 31×12" : "Switch to 12×31";
+  const currentYear = new Date().getFullYear();
+  const isCurrentYear = year === currentYear;
 
   return (
     <section className="overview">
       <header className="overview__header">
         <div>
-          <p className="overview__eyebrow">This year</p>
-          <h2 className="overview__title">Mood overview</h2>
+          <p className="overview__eyebrow">{isCurrentYear ? "This year" : year}</p>
+          <h2 className="overview__title">{isCurrentYear ? "Mood overview" : `${year} overview`}</h2>
         </div>
         <MoodLegend />
       </header>

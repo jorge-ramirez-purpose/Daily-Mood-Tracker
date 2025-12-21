@@ -5,6 +5,7 @@ import type { EntriesMap, NormalizedEntry } from "./utils/types";
 import { aggregateYearData, normalizeEntry, serializeEntry } from "./utils/data";
 import { DailyMoodSelector } from "./components/DailyMoodSelector";
 import { OverviewPanel } from "./components/OverviewPanel";
+import { YearSelector } from "./components/YearSelector";
 import {
   buildJanuaryMockMap,
   buildFebruaryMockMap,
@@ -44,6 +45,7 @@ const App = () => {
   const [showOverview, setShowOverview] = useState(false);
   const todayKey = getTodayKey();
   const [selectedDateKey, setSelectedDateKey] = useState(todayKey);
+  const [selectedYear, setSelectedYear] = useState(CURRENT_YEAR);
 
   useEffect(() => {
     const storage = typeof window === "undefined" ? null : window.localStorage;
@@ -73,26 +75,43 @@ const App = () => {
     };
   }, [selectedDateKey, todayKey]);
 
-  const selectedEntry: NormalizedEntry = normalizeEntry(entries[selectedDateKey]) ?? { first: null, second: null, note: null };
+  const availableYears = useMemo(() => {
+    const years = new Set<number>();
+    Object.keys(entries).forEach((key) => {
+      const year = new Date(key).getFullYear();
+      if (!Number.isNaN(year)) years.add(year);
+    });
+    years.add(CURRENT_YEAR);
+    return Array.from(years).sort((a, b) => b - a);
+  }, [entries]);
+
+  const selectedEntry: NormalizedEntry = normalizeEntry(entries[selectedDateKey]) ?? {
+    first: null,
+    second: null,
+    note: null,
+  };
   const primaryMood = selectedEntry?.first ?? null;
   const secondaryMood = selectedEntry?.second ?? null;
   const noteText = selectedEntry?.note ?? null;
   const isDualDay = Boolean(selectedEntry?.second);
-  const currentYear = CURRENT_YEAR;
 
-  const yearData = useMemo(() => aggregateYearData(entries, currentYear), [entries, currentYear]);
+  const yearData = useMemo(() => aggregateYearData(entries, selectedYear), [entries, selectedYear]);
   const totalDaysTracked = useMemo(
     () =>
       Object.entries(entries).filter(([date]) => {
         const parsed = new Date(date);
-        return !Number.isNaN(parsed.getTime()) && parsed.getFullYear() === currentYear;
+        return !Number.isNaN(parsed.getTime()) && parsed.getFullYear() === selectedYear;
       }).length,
-    [entries, currentYear]
+    [entries, selectedYear]
   );
 
   const updateEntryForDate = (dateKey: string, updater: (entry: NonNullable<NormalizedEntry>) => NormalizedEntry) => {
     setEntries((prev) => {
-      const normalized: NonNullable<NormalizedEntry> = normalizeEntry(prev[dateKey]) ?? { first: null, second: null, note: null };
+      const normalized: NonNullable<NormalizedEntry> = normalizeEntry(prev[dateKey]) ?? {
+        first: null,
+        second: null,
+        note: null,
+      };
       const next = updater(normalized);
       if (!next || !next.first) {
         const { [dateKey]: _omitted, ...rest } = prev;
@@ -156,21 +175,53 @@ const App = () => {
 
   const selectedDateLabel = useMemo(() => formatTodayLabel(parseDateKey(selectedDateKey)), [selectedDateKey]);
 
+  const handleBackup = () => {
+    const storage = typeof window === "undefined" ? null : window.localStorage;
+    if (!storage) return;
+
+    const backupData = {
+      version: "1.0",
+      exportDate: new Date().toISOString(),
+      entries: JSON.parse(storage.getItem(ENTRIES_STORAGE_KEY) || "{}"),
+    };
+
+    const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `mood-tracker-backup-${new Date().toISOString().split("T")[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="app">
+      <button type="button" className="backup-button" onClick={handleBackup} title="Backup data">
+        Backup
+      </button>
+
       <div className="app__container">
         <DailyMoodSelector
           moods={MOODS}
           primaryMood={primaryMood}
           secondaryMood={secondaryMood}
           isDual={isDualDay}
-          isTodaySelection={selectedDateKey === todayKey}
+          isTodaySelection={selectedDateKey === todayKey && selectedYear === CURRENT_YEAR}
           note={noteText}
           onSelectPrimary={handlePrimarySelect}
           onSelectSecondary={handleSecondarySelect}
           onToggleDual={handleToggleDual}
           onNoteChange={handleNoteChange}
           selectedDateLabel={selectedDateLabel}
+        />
+
+        <YearSelector
+          selectedYear={selectedYear}
+          availableYears={availableYears}
+          currentYear={CURRENT_YEAR}
+          onYearChange={setSelectedYear}
         />
 
         <button type="button" className="overview-toggle" onClick={() => setShowOverview((prev) => !prev)}>
@@ -182,7 +233,7 @@ const App = () => {
             data={yearData}
             totalDaysTracked={totalDaysTracked}
             entries={entries}
-            year={currentYear}
+            year={selectedYear}
             todayKey={todayKey}
             selectedDateKey={selectedDateKey}
             onSelectDate={setSelectedDateKey}
