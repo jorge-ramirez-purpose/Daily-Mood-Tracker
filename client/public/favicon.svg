@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Top-left: Yellow -->
+  <rect x="0" y="0" width="16" height="16" fill="#FACC15"/>
+  <!-- Top-right: Yellow/Red diagonal split (bottom-left to top-right) -->
+  <polygon points="16,0 32,0 16,16" fill="#FACC15"/>
+  <polygon points="32,0 32,16 16,16" fill="#EF4444"/>
+  <!-- Bottom-left: Green -->
+  <rect x="0" y="16" width="16" height="16" fill="#22C55E"/>
+  <!-- Bottom-right: Blue -->
+  <rect x="16" y="16" width="16" height="16" fill="#3B82F6"/>
+</svg>
