@@ -129,6 +129,68 @@ To proceed with Week 2, you'll need to:
 
 ---
 
+## Architecture Decision: "Bring Your Own Storage" (BYOS)
+
+### Decision Date: January 2026
+
+### Context
+
+The app handles sensitive personal mood data. After evaluating options for cross-device sync, we decided on a **"Bring Your Own Storage" (BYOS)** approach where users connect their own cloud storage (Google Drive, Dropbox) rather than storing data on our servers.
+
+### Why BYOS?
+
+| Concern | BYOS Solution |
+|---------|---------------|
+| **Privacy** | Data never touches our servers - stored in user's own cloud |
+| **Legal (GDPR)** | We're not a "data controller" - minimal legal burden |
+| **Scalability** | Works for personal use, friends/family, or public release |
+| **Cost** | No database hosting costs for user data |
+
+### Supported Providers
+
+1. **Google Drive** (Primary)
+   - Uses `drive.appdata` scope (hidden app folder)
+   - Non-sensitive scope = no Google app verification required
+   - Most users already have Google accounts
+
+2. **Dropbox** (Secondary)
+   - Uses OAuth 2.0 with PKCE (secure, no backend needed)
+   - Official SDK available
+   - Good alternative for non-Google users
+
+3. **iCloud** - NOT supported (no public API for web apps)
+
+### Authentication Strategy
+
+We'll still use authentication but **only for optional provider connections**:
+
+- **Google OAuth** - for Google Drive connection
+- **Dropbox OAuth** - for Dropbox connection
+- **No mandatory login** - app works locally without any account
+
+### Data Flow
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                   User's Device                          │
+│  ┌─────────────┐     ┌─────────────────────────────┐    │
+│  │ localStorage│ ←─→ │ Cloud Sync (optional)       │    │
+│  │ (primary)   │     │ - Google Drive              │    │
+│  └─────────────┘     │ - Dropbox                   │    │
+│                      └─────────────────────────────┘    │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Impact on Original Migration Plan
+
+- **Week 2 (Auth)**: Simplified - only OAuth for cloud providers, not user accounts
+- **Week 3+ (API)**: Not needed for user data - only static Next.js deployment
+- **Database**: Not needed for mood data - only if we add features like sharing
+
+See [BYOS_IMPLEMENTATION.md](BYOS_IMPLEMENTATION.md) for detailed implementation guide.
+
+---
+
 **Status:** Week 1 Complete ✅
-**Next:** Week 2 - Authentication Implementation
-**Estimated Completion:** 5 weeks total
+**Next:** Week 2 - BYOS Cloud Sync Implementation
+**Estimated Completion:** 3-4 weeks total (reduced from 5)
