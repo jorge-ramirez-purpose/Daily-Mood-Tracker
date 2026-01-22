@@ -6,41 +6,15 @@ import { aggregateYearData, normalizeEntry, serializeEntry } from "./utils/data"
 import { DailyMoodSelector } from "./components/DailyMoodSelector";
 import { OverviewPanel } from "./components/OverviewPanel";
 import { YearSelector } from "./components/YearSelector";
-import {
-  buildJanuaryMockMap,
-  buildFebruaryMockMap,
-  buildMarchMockMap,
-  buildAprilMockMap,
-  buildMayMockMap,
-  buildJuneMockMap,
-  buildJulyMockMap,
-  buildAugustMockMap,
-  buildSeptemberMockMap,
-  buildOctoberMockMap,
-  buildNovemberMockMap,
-} from "./data/monthMocks";
 import { formatTodayLabel, getTodayKey, loadEntries, saveEntries } from "./utils/appHelpers";
 import { parseDateKey } from "./utils/dateHelpers";
 
 const ENTRIES_STORAGE_KEY = "mood-tracker.daily.entries";
 const CURRENT_YEAR = new Date().getFullYear();
-const DEFAULT_ENTRIES = {
-  ...buildJanuaryMockMap(CURRENT_YEAR),
-  ...buildFebruaryMockMap(CURRENT_YEAR),
-  ...buildMarchMockMap(CURRENT_YEAR),
-  ...buildAprilMockMap(CURRENT_YEAR),
-  ...buildMayMockMap(CURRENT_YEAR),
-  ...buildJuneMockMap(CURRENT_YEAR),
-  ...buildJulyMockMap(CURRENT_YEAR),
-  ...buildAugustMockMap(CURRENT_YEAR),
-  ...buildSeptemberMockMap(CURRENT_YEAR),
-  ...buildOctoberMockMap(CURRENT_YEAR),
-  ...buildNovemberMockMap(CURRENT_YEAR),
-};
 
 const App = () => {
   const [entries, setEntries] = useState<EntriesMap>(() =>
-    loadEntries(typeof window === "undefined" ? null : window.localStorage, ENTRIES_STORAGE_KEY, DEFAULT_ENTRIES)
+    loadEntries(typeof window === "undefined" ? null : window.localStorage, ENTRIES_STORAGE_KEY)
   );
   const [showOverview, setShowOverview] = useState(false);
   const todayKey = getTodayKey();

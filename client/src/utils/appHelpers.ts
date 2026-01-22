@@ -11,15 +11,15 @@ export const formatTodayLabel = (date: Date = new Date()): string =>
 
 type StorageLike = Pick<Storage, "getItem" | "setItem"> | null;
 
-export const loadEntries = (storage: StorageLike, storageKey: string, fallback: EntriesMap): EntriesMap => {
-  if (!storage) return { ...fallback };
+export const loadEntries = (storage: StorageLike, storageKey: string): EntriesMap => {
+  if (!storage) return {};
   try {
     const stored = storage.getItem(storageKey);
-    if (!stored) return { ...fallback };
+    if (!stored) return {};
     const parsed = JSON.parse(stored) as EntriesMap;
-    return parsed && Object.keys(parsed).length > 0 ? parsed : { ...fallback };
+    return parsed && typeof parsed === "object" ? parsed : {};
   } catch {
-    return { ...fallback };
+    return {};
   }
 };
 
