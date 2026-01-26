@@ -526,6 +526,7 @@
   border-radius: 0.75rem;
   overflow: hidden;
   background: var(--surface);
+  min-width: 900px;
 }
 
 .year-grid__corner {
