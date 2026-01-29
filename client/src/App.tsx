@@ -8,6 +8,7 @@ import { OverviewPanel } from "./components/OverviewPanel";
 import { YearSelector } from "./components/YearSelector";
 import { formatTodayLabel, getTodayKey, loadEntries, saveEntries } from "./utils/appHelpers";
 import { parseDateKey } from "./utils/dateHelpers";
+import { SettingsMenu } from "./components/SettingsMenu";
 
 const ENTRIES_STORAGE_KEY = "mood-tracker.daily.entries";
 const CURRENT_YEAR = new Date().getFullYear();
@@ -213,16 +214,20 @@ const App = () => {
     input.click();
   };
 
+  const handleClear = () => {
+    setEntries({});
+    setSelectedYear(CURRENT_YEAR);
+    setSelectedDateKey(todayKey);
+  };
+
   return (
     <div className="app">
-      <div className="backup-restore-buttons">
-        <button type="button" className="backup-button" onClick={handleBackup} title="Backup data">
-          Backup
-        </button>
-        <button type="button" className="restore-button" onClick={handleRestore} title="Restore from backup">
-          Restore
-        </button>
-      </div>
+      <SettingsMenu
+        onBackup={handleBackup}
+        onRestore={handleRestore}
+        onClear={handleClear}
+        entryCount={Object.keys(entries).length}
+      />
 
       <div className="app__container">
         <DailyMoodSelector
