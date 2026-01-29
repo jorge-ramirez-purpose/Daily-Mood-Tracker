@@ -356,34 +356,105 @@
   margin-right: 0.25rem;
 }
 
-.backup-restore-buttons {
+/* Settings Menu */
+.settings-menu {
   position: fixed;
   top: 2rem;
   right: 2rem;
-  display: flex;
-  gap: 0.75rem;
   z-index: 100;
 }
 
-.backup-button,
-.restore-button {
+.settings-menu__trigger {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
   border: 1px solid var(--surface-border);
   background: var(--surface);
   color: var(--text-primary);
-  border-radius: 999px;
-  padding: 0.75rem 1.75rem;
-  font-size: 0.9rem;
-  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   box-shadow: 0 12px 32px var(--surface-shadow), 0 0 0 1px rgba(255, 255, 255, 0.1);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
   backdrop-filter: blur(12px);
 }
 
-.backup-button:hover,
-.restore-button:hover {
-  transform: translateY(-3px) scale(1.02);
+.settings-menu__trigger:hover {
+  transform: translateY(-2px) scale(1.05);
   box-shadow: 0 16px 40px var(--surface-shadow), 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+.settings-menu__trigger svg {
+  width: 24px;
+  height: 24px;
+}
+
+.settings-menu__items {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  min-width: 160px;
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  border-radius: 0.75rem;
+  padding: 0.5rem 0;
+  box-shadow: 0 20px 50px var(--surface-shadow);
+  backdrop-filter: blur(12px);
+  outline: none;
+}
+
+.settings-menu__item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.1s ease;
+  text-align: left;
+}
+
+.settings-menu__item:hover,
+.settings-menu__item--active {
+  background: var(--surface-muted);
+}
+
+.settings-menu__item svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.settings-menu__item--danger {
+  color: #dc2626;
+}
+
+.settings-menu__item--danger svg {
+  color: #dc2626;
+}
+
+.settings-menu__separator {
+  height: 1px;
+  background: var(--surface-border);
+  margin: 0.5rem 0;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .year-selector {
@@ -686,16 +757,28 @@
     padding: 1.5rem 1rem 2.5rem;
   }
 
-  .backup-restore-buttons {
+  .settings-menu {
     top: 1rem;
     right: 1rem;
-    gap: 0.5rem;
   }
 
-  .backup-button,
-  .restore-button {
-    padding: 0.6rem 1.2rem;
-    font-size: 0.8rem;
+  .settings-menu__trigger {
+    width: 40px;
+    height: 40px;
+  }
+
+  .settings-menu__trigger svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .settings-menu__items {
+    min-width: 140px;
+  }
+
+  .settings-menu__item {
+    padding: 0.6rem 0.85rem;
+    font-size: 0.85rem;
   }
 
   .app__header {
