@@ -6,7 +6,19 @@ import { aggregateYearData, normalizeEntry, serializeEntry } from "./utils/data"
 import { DailyMoodSelector } from "./components/DailyMoodSelector";
 import { OverviewPanel } from "./components/OverviewPanel";
 import { YearSelector } from "./components/YearSelector";
-import { formatTodayLabel, getTodayKey, loadEntries, saveEntries } from "./utils/appHelpers";
+import {
+  applyNoteConflictResolution,
+  createBackupData,
+  downloadBackup,
+  formatTodayLabel,
+  getAvailableYears,
+  getTodayKey,
+  getTotalDaysTracked,
+  loadEntries,
+  mergeEntries,
+  parseBackupFile,
+  saveEntries,
+} from "./utils/appHelpers";
 import { parseDateKey } from "./utils/dateHelpers";
 import { SettingsMenu } from "./components/SettingsMenu";
 
@@ -50,15 +62,7 @@ const App = () => {
     };
   }, [selectedDateKey, todayKey]);
 
-  const availableYears = useMemo(() => {
-    const years = new Set<number>();
-    Object.keys(entries).forEach((key) => {
-      const year = new Date(key).getFullYear();
-      if (!Number.isNaN(year)) years.add(year);
-    });
-    years.add(CURRENT_YEAR);
-    return Array.from(years).sort((a, b) => b - a);
-  }, [entries]);
+  const availableYears = useMemo(() => getAvailableYears(entries, CURRENT_YEAR), [entries]);
 
   const selectedEntry: NormalizedEntry = normalizeEntry(entries[selectedDateKey]) ?? {
     first: null,
@@ -71,14 +75,7 @@ const App = () => {
   const isDualDay = Boolean(selectedEntry?.second);
 
   const yearData = useMemo(() => aggregateYearData(entries, selectedYear), [entries, selectedYear]);
-  const totalDaysTracked = useMemo(
-    () =>
-      Object.entries(entries).filter(([date]) => {
-        const parsed = new Date(date);
-        return !Number.isNaN(parsed.getTime()) && parsed.getFullYear() === selectedYear;
-      }).length,
-    [entries, selectedYear]
-  );
+  const totalDaysTracked = useMemo(() => getTotalDaysTracked(entries, selectedYear), [entries, selectedYear]);
 
   const updateEntryForDate = (dateKey: string, updater: (entry: NonNullable<NormalizedEntry>) => NormalizedEntry) => {
     setEntries((prev) => {
@@ -151,24 +148,7 @@ const App = () => {
   const selectedDateLabel = useMemo(() => formatTodayLabel(parseDateKey(selectedDateKey)), [selectedDateKey]);
 
   const handleBackup = () => {
-    const storage = typeof window === "undefined" ? null : window.localStorage;
-    if (!storage) return;
-
-    const backupData = {
-      version: "1.0",
-      exportDate: new Date().toISOString(),
-      entries: JSON.parse(storage.getItem(ENTRIES_STORAGE_KEY) || "{}"),
-    };
-
-    const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `mood-tracker-backup-${new Date().toISOString().split("T")[0]}.json`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    downloadBackup(createBackupData(entries));
   };
 
   const handleRestore = () => {
@@ -179,36 +159,38 @@ const App = () => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
 
-      if (!file.name.endsWith(".json")) {
-        alert("Please select a valid JSON file");
-        return;
-      }
-
       try {
-        const text = await file.text();
-        const data = JSON.parse(text);
-
-        if (!data.entries || typeof data.entries !== "object") {
-          alert("Invalid backup file format: missing or invalid entries");
-          return;
-        }
+        const backupData = await parseBackupFile(file);
+        const incomingCount = Object.keys(backupData.entries).length;
 
         const confirmRestore = window.confirm(
-          `This will restore ${Object.keys(data.entries).length} entries and replace your current data. Continue?`
+          `This will merge ${incomingCount} entries with your current data. Moods will be updated, notes will be preserved unless you choose to overwrite. Continue?`
         );
 
         if (!confirmRestore) return;
 
+        let { mergedEntries, noteConflicts } = mergeEntries(entries, backupData.entries);
+
+        for (const conflict of noteConflicts) {
+          const shouldOverwrite = window.confirm(
+            `Note conflict on ${conflict.dateKey}:\n\nCurrent note:\n"${conflict.currentNote}"\n\nIncoming note:\n"${conflict.incomingNote}"\n\nOverwrite with incoming note?`
+          );
+
+          if (shouldOverwrite) {
+            mergedEntries = applyNoteConflictResolution(mergedEntries, conflict.dateKey, conflict.incomingNote);
+          }
+        }
+
         const storage = typeof window === "undefined" ? null : window.localStorage;
         if (!storage) return;
 
-        storage.setItem(ENTRIES_STORAGE_KEY, JSON.stringify(data.entries));
-        setEntries(data.entries);
+        storage.setItem(ENTRIES_STORAGE_KEY, JSON.stringify(mergedEntries));
+        setEntries(mergedEntries);
         setSelectedYear(CURRENT_YEAR);
         setSelectedDateKey(todayKey);
-        alert("Data restored successfully!");
+        alert("Data merged successfully!");
       } catch (error) {
-        alert(`Failed to restore backup: ${error instanceof Error ? error.message : "Invalid JSON file"}`);
+        alert(`Failed to restore backup: ${error instanceof Error ? error.message : "Unknown error"}`);
       }
     };
     input.click();
