@@ -155,8 +155,16 @@ const App = () => {
     const input = document.createElement("input");
     input.type = "file";
     input.accept = ".json";
+    input.style.display = "none";
+    document.body.appendChild(input);
+
+    const cleanup = () => {
+      document.body.removeChild(input);
+    };
+
     input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
+      cleanup();
       if (!file) return;
 
       try {
@@ -193,6 +201,8 @@ const App = () => {
         alert(`Failed to restore backup: ${error instanceof Error ? error.message : "Unknown error"}`);
       }
     };
+
+    input.oncancel = cleanup;
     input.click();
   };
 
