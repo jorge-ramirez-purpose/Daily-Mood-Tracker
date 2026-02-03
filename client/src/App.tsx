@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import "./App.css";
 import { MOODS, type MoodKey } from "./constants/moods";
 import type { EntriesMap, NormalizedEntry } from "./utils/types";
@@ -21,6 +21,15 @@ import {
 } from "./utils/appHelpers";
 import { parseDateKey } from "./utils/dateHelpers";
 import { SettingsMenu } from "./components/SettingsMenu";
+import { ConfirmModal } from "./components/ConfirmModal";
+
+interface ModalState {
+  isOpen: boolean;
+  title: string;
+  message: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
+}
 
 const ENTRIES_STORAGE_KEY = "mood-tracker.daily.entries";
 const CURRENT_YEAR = new Date().getFullYear();
@@ -33,6 +42,28 @@ const App = () => {
   const todayKey = getTodayKey();
   const [selectedDateKey, setSelectedDateKey] = useState(todayKey);
   const [selectedYear, setSelectedYear] = useState(CURRENT_YEAR);
+
+  const [modal, setModal] = useState<ModalState>({ isOpen: false, title: "", message: "" });
+  const modalResolverRef = useRef<((value: boolean) => void) | null>(null);
+
+  const showConfirm = useCallback((title: string, message: string, confirmLabel?: string, cancelLabel?: string): Promise<boolean> => {
+    return new Promise((resolve) => {
+      modalResolverRef.current = resolve;
+      setModal({ isOpen: true, title, message, confirmLabel, cancelLabel });
+    });
+  }, []);
+
+  const handleModalConfirm = useCallback(() => {
+    modalResolverRef.current?.(true);
+    modalResolverRef.current = null;
+    setModal((prev) => ({ ...prev, isOpen: false }));
+  }, []);
+
+  const handleModalCancel = useCallback(() => {
+    modalResolverRef.current?.(false);
+    modalResolverRef.current = null;
+    setModal((prev) => ({ ...prev, isOpen: false }));
+  }, []);
 
   useEffect(() => {
     const storage = typeof window === "undefined" ? null : window.localStorage;
@@ -171,8 +202,11 @@ const App = () => {
         const backupData = await parseBackupFile(file);
         const incomingCount = Object.keys(backupData.entries).length;
 
-        const confirmRestore = window.confirm(
-          `This will merge ${incomingCount} entries with your current data. Moods will be updated, notes will be preserved unless you choose to overwrite. Continue?`
+        const confirmRestore = await showConfirm(
+          "Import Data",
+          `This will merge ${incomingCount} entries with your current data. Moods will be updated, notes will be preserved unless you choose to overwrite.`,
+          "Continue",
+          "Cancel"
         );
 
         if (!confirmRestore) return;
@@ -180,8 +214,11 @@ const App = () => {
         let { mergedEntries, noteConflicts } = mergeEntries(entries, backupData.entries);
 
         for (const conflict of noteConflicts) {
-          const shouldOverwrite = window.confirm(
-            `Note conflict on ${conflict.dateKey}:\n\nCurrent note:\n"${conflict.currentNote}"\n\nIncoming note:\n"${conflict.incomingNote}"\n\nOverwrite with incoming note?`
+          const shouldOverwrite = await showConfirm(
+            "Note Conflict",
+            `Conflict on ${conflict.dateKey}:\n\nCurrent note:\n"${conflict.currentNote}"\n\nIncoming note:\n"${conflict.incomingNote}"`,
+            "Use Incoming",
+            "Keep Current"
           );
 
           if (shouldOverwrite) {
@@ -196,9 +233,9 @@ const App = () => {
         setEntries(mergedEntries);
         setSelectedYear(CURRENT_YEAR);
         setSelectedDateKey(todayKey);
-        alert("Data merged successfully!");
+        await showConfirm("Success", "Data merged successfully!", "OK");
       } catch (error) {
-        alert(`Failed to restore backup: ${error instanceof Error ? error.message : "Unknown error"}`);
+        await showConfirm("Error", `Failed to restore backup: ${error instanceof Error ? error.message : "Unknown error"}`, "OK");
       }
     };
 
@@ -214,6 +251,15 @@ const App = () => {
 
   return (
     <div className="app">
+      <ConfirmModal
+        isOpen={modal.isOpen}
+        title={modal.title}
+        message={modal.message}
+        confirmLabel={modal.confirmLabel}
+        cancelLabel={modal.cancelLabel}
+        onConfirm={handleModalConfirm}
+        onCancel={handleModalCancel}
+      />
       <SettingsMenu
         onBackup={handleBackup}
         onRestore={handleRestore}
