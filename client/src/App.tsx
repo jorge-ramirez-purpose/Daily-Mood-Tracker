@@ -195,8 +195,10 @@ const App = () => {
 
     input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
-      cleanup();
-      if (!file) return;
+      if (!file) {
+        cleanup();
+        return;
+      }
 
       try {
         const backupData = await parseBackupFile(file);
@@ -236,6 +238,8 @@ const App = () => {
         await showConfirm("Success", "Data merged successfully!", "OK");
       } catch (error) {
         await showConfirm("Error", `Failed to restore backup: ${error instanceof Error ? error.message : "Unknown error"}`, "OK");
+      } finally {
+        cleanup();
       }
     };
 
