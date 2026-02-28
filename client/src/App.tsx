@@ -116,7 +116,7 @@ const App = () => {
         note: null,
       };
       const next = updater(normalized);
-      if (!next || !next.first) {
+      if (!next || (!next.first && !next.note)) {
         const { [dateKey]: _omitted, ...rest } = prev;
         return rest;
       }

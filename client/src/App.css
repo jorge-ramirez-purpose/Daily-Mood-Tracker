@@ -770,6 +770,10 @@
   background: rgba(148, 163, 184, 0.1);
 }
 
+.year-grid__cell--note-only {
+  background: #9ca3af;
+}
+
 .year-grid__cell--disabled {
   background: rgba(148, 163, 184, 0.05);
   opacity: 0.4;

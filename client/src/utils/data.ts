@@ -39,7 +39,10 @@ export const normalizeEntry = (value: StoredEntry): NormalizedEntry => {
 };
 
 export const serializeEntry = ({ first, second, note }: { first: MoodKey | null; second: MoodKey | null; note: string | null }): StoredEntry => {
-  if (!first) return null;
+  if (!first && !note) return null;
+
+  // Note-only entry (no mood yet)
+  if (!first) return { note };
 
   // If there's a note, always return object format
   if (note) {

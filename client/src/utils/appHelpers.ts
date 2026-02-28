@@ -40,9 +40,11 @@ export const getAvailableYears = (entries: EntriesMap, currentYear: number): num
 };
 
 export const getTotalDaysTracked = (entries: EntriesMap, year: number): number => {
-  return Object.entries(entries).filter(([date]) => {
+  return Object.entries(entries).filter(([date, value]) => {
     const parsed = new Date(date);
-    return !Number.isNaN(parsed.getTime()) && parsed.getFullYear() === year;
+    if (Number.isNaN(parsed.getTime()) || parsed.getFullYear() !== year) return false;
+    const normalized = normalizeEntry(value);
+    return Boolean(normalized?.first);
   }).length;
 };
 
@@ -104,7 +106,7 @@ export const mergeEntries = (currentEntries: EntriesMap, incomingEntries: Entrie
     const incomingRaw = incomingEntries[dateKey];
     const incomingNormalized = normalizeEntry(incomingRaw);
 
-    if (!incomingNormalized?.first) continue;
+    if (!incomingNormalized?.first && !incomingNormalized?.note) continue;
 
     const currentRaw = mergedEntries[dateKey];
     const currentNormalized = normalizeEntry(currentRaw);

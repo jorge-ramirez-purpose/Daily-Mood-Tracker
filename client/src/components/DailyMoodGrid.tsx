@@ -11,6 +11,7 @@ type DayCell = {
   isDisabled: boolean;
   firstMoodKey: MoodKey | null;
   secondMoodKey: MoodKey | null;
+  hasNote: boolean;
   isToday: boolean;
 };
 
@@ -51,6 +52,7 @@ const buildDay = (
     isDisabled: false,
     firstMoodKey: entry?.first ?? null,
     secondMoodKey: entry?.second ?? null,
+    hasNote: Boolean(entry?.note),
     isToday: dateKey === todayKey,
   };
 };
@@ -76,6 +78,7 @@ export const DailyMoodGrid = ({
               isDisabled: true,
               firstMoodKey: null,
               secondMoodKey: null,
+              hasNote: false,
               isToday: false,
             };
           }
@@ -95,8 +98,11 @@ export const DailyMoodGrid = ({
     const secondaryColor =
       day.secondMoodKey && day.secondMoodKey !== day.firstMoodKey ? colorMap[day.secondMoodKey] : null;
 
+    const isNoteOnly = !day.firstMoodKey && day.hasNote;
+
     let cellClass = "year-grid__cell";
     if (day.isDisabled) cellClass += " year-grid__cell--disabled";
+    else if (isNoteOnly) cellClass += " year-grid__cell--note-only";
     else if (!day.firstMoodKey) cellClass += " year-grid__cell--empty";
     const activeKey = selectedDateKey ?? todayKey;
     const isSelected = Boolean(activeKey && day.dateKey && activeKey === day.dateKey);
@@ -118,6 +124,8 @@ export const DailyMoodGrid = ({
       ? secondaryColor
         ? `${monthLabel} ${day.day}: ${day.firstMoodKey} · ${day.secondMoodKey}`
         : `${monthLabel} ${day.day}: ${day.firstMoodKey}`
+      : isNoteOnly
+      ? `${monthLabel} ${day.day}: note`
       : `${monthLabel} ${day.day}: no entry`;
 
     const isInteractive = Boolean(onSelectDate) && !day.isDisabled && Boolean(day.dateKey);
