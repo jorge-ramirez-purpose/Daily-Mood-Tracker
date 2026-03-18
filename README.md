@@ -3,7 +3,8 @@
 A privacy-first mood tracking app that runs entirely in your browser. Log how you feel each day using a simple color-coded system, then look back at your weeks, months, and year to spot patterns in your emotional well-being.
 
 <!-- TODO: Add screenshot -->
-![App Screenshot](screenshot-placeholder.png)
+## App Screenshot
+<img width="1509" height="819" alt="Screenshot 2026-03-18 at 11 17 15" src="https://github.com/user-attachments/assets/093c01b7-6833-4ea1-baa2-04190e9d4ccc" />
 
 ## Features
 
