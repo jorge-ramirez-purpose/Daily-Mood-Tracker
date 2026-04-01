@@ -22,6 +22,7 @@ import {
 import { parseDateKey } from "./utils/dateHelpers";
 import { SettingsMenu } from "./components/SettingsMenu";
 import { ConfirmModal } from "./components/ConfirmModal";
+import { CloudSyncSettings } from "./components/CloudSyncSettings";
 
 interface ModalState {
   isOpen: boolean;
@@ -43,6 +44,7 @@ const App = () => {
   const [selectedDateKey, setSelectedDateKey] = useState(todayKey);
   const [selectedYear, setSelectedYear] = useState(CURRENT_YEAR);
 
+  const [showSync, setShowSync] = useState(false);
   const [modal, setModal] = useState<ModalState>({ isOpen: false, title: "", message: "" });
   const modalResolverRef = useRef<((value: boolean) => void) | null>(null);
 
@@ -268,6 +270,7 @@ const App = () => {
         onBackup={handleBackup}
         onRestore={handleRestore}
         onClear={handleClear}
+        onToggleSync={() => setShowSync((prev) => !prev)}
         entryCount={Object.keys(entries).length}
       />
 
@@ -292,6 +295,8 @@ const App = () => {
           currentYear={CURRENT_YEAR}
           onYearChange={setSelectedYear}
         />
+
+        {showSync && <CloudSyncSettings entries={entries} setEntries={setEntries} />}
 
         <button type="button" className="overview-toggle" onClick={() => setShowOverview((prev) => !prev)}>
           {showOverview ? "Hide yearly overview" : "Show yearly overview"}
