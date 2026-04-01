@@ -8,115 +8,19 @@ const DATA_FILE_NAME = "mood-tracker-data.json";
 const TOKEN_KEY = "mood-tracker.google.token";
 const TOKEN_EXPIRY_KEY = "mood-tracker.google.expiry";
 
-export class GoogleDriveProvider implements TStorageProvider {
-  readonly name = "googleDrive" as const;
-  readonly displayName = "Google Drive";
+export function createGoogleDriveProvider(): TStorageProvider {
+  let accessToken: string | null = null;
+  let tokenClient: google.accounts.oauth2.TokenClient | null = null;
+  let lastSyncTime: Date | null = null;
 
-  private tokenClient: google.accounts.oauth2.TokenClient | null = null;
-  private accessToken: string | null = null;
-  private lastSyncTime: Date | null = null;
-
-  constructor() {
-    const storedToken = localStorage.getItem(TOKEN_KEY);
-    const expiry = localStorage.getItem(TOKEN_EXPIRY_KEY);
-    if (storedToken && expiry && Date.now() < parseInt(expiry)) {
-      this.accessToken = storedToken;
-    }
+  const storedToken = localStorage.getItem(TOKEN_KEY);
+  const expiry = localStorage.getItem(TOKEN_EXPIRY_KEY);
+  if (storedToken && expiry && Date.now() < parseInt(expiry)) {
+    accessToken = storedToken;
   }
 
-  isConnected(): boolean {
-    return this.accessToken !== null;
-  }
-
-  async connect(): Promise<void> {
-    await this.loadGisScript();
-    await this.loadGapiScript();
-
-    return new Promise((resolve, reject) => {
-      this.tokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: CLIENT_ID,
-        scope: SCOPES,
-        callback: (response) => {
-          if (response.error) {
-            reject(new Error(response.error));
-            return;
-          }
-          this.accessToken = response.access_token;
-          const expiry = Date.now() + response.expires_in * 1000;
-          localStorage.setItem(TOKEN_KEY, response.access_token);
-          localStorage.setItem(TOKEN_EXPIRY_KEY, expiry.toString());
-          gapi.client.setToken({ access_token: response.access_token });
-          resolve();
-        },
-      });
-      this.tokenClient.requestAccessToken();
-    });
-  }
-
-  disconnect(): void {
-    if (this.accessToken) {
-      google.accounts.oauth2.revoke(this.accessToken);
-    }
-    this.accessToken = null;
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(TOKEN_EXPIRY_KEY);
-  }
-
-  async load(): Promise<TEntriesMap> {
-    if (!this.accessToken) throw new Error("Not connected to Google Drive");
-
-    const fileId = await this.findDataFile();
-    if (!fileId) return {};
-
-    const response = await gapi.client.drive.files.get({ fileId, alt: "media" });
-    this.lastSyncTime = new Date();
-    return JSON.parse(response.body) as TEntriesMap;
-  }
-
-  async save(entries: TEntriesMap): Promise<void> {
-    if (!this.accessToken) throw new Error("Not connected to Google Drive");
-
-    const content = JSON.stringify(entries);
-    const fileId = await this.findDataFile();
-
-    if (fileId) {
-      await gapi.client.request({
-        path: `/upload/drive/v3/files/${fileId}`,
-        method: "PATCH",
-        params: { uploadType: "media" },
-        body: content,
-      });
-    } else {
-      const metadata = { name: DATA_FILE_NAME, parents: ["appDataFolder"] };
-      const form = new FormData();
-      form.append("metadata", new Blob([JSON.stringify(metadata)], { type: "application/json" }));
-      form.append("file", new Blob([content], { type: "application/json" }));
-      await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${this.accessToken}` },
-        body: form,
-      });
-    }
-
-    this.lastSyncTime = new Date();
-  }
-
-  getLastSyncTime(): Date | null {
-    return this.lastSyncTime;
-  }
-
-  private async findDataFile(): Promise<string | null> {
-    const response = await gapi.client.drive.files.list({
-      spaces: "appDataFolder",
-      q: `name = '${DATA_FILE_NAME}'`,
-      fields: "files(id)",
-    });
-    const files = response.result.files;
-    return files && files.length > 0 ? (files[0].id ?? null) : null;
-  }
-
-  private loadGisScript(): Promise<void> {
-    return new Promise((resolve, reject) => {
+  const loadGisScript = (): Promise<void> =>
+    new Promise((resolve, reject) => {
       if (typeof google !== "undefined" && google.accounts) {
         resolve();
         return;
@@ -127,10 +31,9 @@ export class GoogleDriveProvider implements TStorageProvider {
       script.onerror = reject;
       document.head.appendChild(script);
     });
-  }
 
-  private loadGapiScript(): Promise<void> {
-    return new Promise((resolve, reject) => {
+  const loadGapiScript = (): Promise<void> =>
+    new Promise((resolve, reject) => {
       if (typeof gapi !== "undefined" && gapi.client) {
         resolve();
         return;
@@ -147,5 +50,93 @@ export class GoogleDriveProvider implements TStorageProvider {
       script.onerror = reject;
       document.head.appendChild(script);
     });
-  }
+
+  const findDataFile = async (): Promise<string | null> => {
+    const response = await gapi.client.drive.files.list({
+      spaces: "appDataFolder",
+      q: `name = '${DATA_FILE_NAME}'`,
+      fields: "files(id)",
+    });
+    const files = response.result.files;
+    return files && files.length > 0 ? (files[0].id ?? null) : null;
+  };
+
+  return {
+    name: "googleDrive" as const,
+    displayName: "Google Drive",
+
+    isConnected: () => accessToken !== null,
+
+    connect: async () => {
+      await loadGisScript();
+      await loadGapiScript();
+
+      return new Promise((resolve, reject) => {
+        tokenClient = google.accounts.oauth2.initTokenClient({
+          client_id: CLIENT_ID,
+          scope: SCOPES,
+          callback: (response) => {
+            if (response.error) {
+              reject(new Error(response.error));
+              return;
+            }
+            accessToken = response.access_token;
+            const expiryTime = Date.now() + response.expires_in * 1000;
+            localStorage.setItem(TOKEN_KEY, response.access_token);
+            localStorage.setItem(TOKEN_EXPIRY_KEY, expiryTime.toString());
+            gapi.client.setToken({ access_token: response.access_token });
+            resolve();
+          },
+        });
+        tokenClient.requestAccessToken();
+      });
+    },
+
+    disconnect: () => {
+      if (accessToken) {
+        google.accounts.oauth2.revoke(accessToken);
+      }
+      accessToken = null;
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(TOKEN_EXPIRY_KEY);
+    },
+
+    load: async () => {
+      if (!accessToken) throw new Error("Not connected to Google Drive");
+      const fileId = await findDataFile();
+      if (!fileId) return {};
+      const response = await gapi.client.drive.files.get({ fileId, alt: "media" });
+      lastSyncTime = new Date();
+      return JSON.parse(response.body) as TEntriesMap;
+    },
+
+    save: async (entries: TEntriesMap) => {
+      if (!accessToken) throw new Error("Not connected to Google Drive");
+      const content = JSON.stringify(entries);
+      const fileId = await findDataFile();
+
+      if (fileId) {
+        await gapi.client.request({
+          path: `/upload/drive/v3/files/${fileId}`,
+          method: "PATCH",
+          params: { uploadType: "media" },
+          body: content,
+        });
+      } else {
+        const metadata = { name: DATA_FILE_NAME, parents: ["appDataFolder"] };
+        const form = new FormData();
+        form.append("metadata", new Blob([JSON.stringify(metadata)], { type: "application/json" }));
+        form.append("file", new Blob([content], { type: "application/json" }));
+        await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${accessToken}` },
+          body: form,
+        });
+      }
+
+      lastSyncTime = new Date();
+    },
+
+    getLastSyncTime: () => lastSyncTime,
+  };
 }

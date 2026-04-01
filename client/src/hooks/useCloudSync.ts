@@ -1,8 +1,8 @@
 import { useState, useCallback, useEffect } from "react";
 import type { TStorageProvider, TCloudSyncState } from "../lib/storage/types";
 import type { TEntriesMap } from "../utils/types";
-import { GoogleDriveProvider } from "../lib/storage/googleDrive";
-import { DropboxProvider } from "../lib/storage/dropbox";
+import { createGoogleDriveProvider } from "../lib/storage/googleDrive";
+import { createDropboxProvider } from "../lib/storage/dropbox";
 import { mergeEntries } from "../utils/appHelpers";
 
 const PROVIDER_KEY = "mood-tracker.sync.provider";
@@ -21,17 +21,17 @@ export function useCloudSync(
   useEffect(() => {
     const saved = localStorage.getItem(PROVIDER_KEY);
     if (saved === "googleDrive") {
-      const provider = new GoogleDriveProvider();
+      const provider = createGoogleDriveProvider();
       if (provider.isConnected()) setState((prev) => ({ ...prev, provider }));
     } else if (saved === "dropbox") {
-      const provider = new DropboxProvider();
+      const provider = createDropboxProvider();
       if (provider.isConnected()) setState((prev) => ({ ...prev, provider }));
     }
   }, []);
 
   const connect = useCallback(async (providerType: "googleDrive" | "dropbox") => {
     const provider: TStorageProvider =
-      providerType === "googleDrive" ? new GoogleDriveProvider() : new DropboxProvider();
+      providerType === "googleDrive" ? createGoogleDriveProvider() : createDropboxProvider();
 
     setState((prev) => ({ ...prev, status: "syncing", error: null }));
     try {
