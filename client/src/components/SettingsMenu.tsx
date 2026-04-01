@@ -1,7 +1,7 @@
 import { Menu, MenuButton, MenuItems, MenuItem } from "@headlessui/react";
 import { List, FloppyDisk, ClockClockwise, Fire, Cloud } from "@phosphor-icons/react";
 
-type SettingsMenuProps = {
+type TSettingsMenuProps = {
   onBackup: () => void;
   onRestore: () => void;
   onClear: () => void;
@@ -9,7 +9,7 @@ type SettingsMenuProps = {
   entryCount: number;
 };
 
-export const SettingsMenu = ({ onBackup, onRestore, onClear, onToggleSync, entryCount }: SettingsMenuProps) => {
+export const SettingsMenu = ({ onBackup, onRestore, onClear, onToggleSync, entryCount }: TSettingsMenuProps) => {
   const handleClear = () => {
     const confirmed = window.confirm(
       `Are you sure? This will delete ${entryCount} ${entryCount === 1 ? "entry" : "entries"}.`

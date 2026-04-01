@@ -1,22 +1,22 @@
-import type { EntriesMap } from "../../utils/types";
+import type { TEntriesMap } from "../../utils/types";
 
-export type SyncStatus = "idle" | "syncing" | "synced" | "error";
+export type TSyncStatus = "idle" | "syncing" | "synced" | "error";
 
-export interface StorageProvider {
+export type TStorageProvider = {
   readonly name: "localStorage" | "googleDrive" | "dropbox";
   readonly displayName: string;
 
   isConnected(): boolean;
   connect(): Promise<void>;
   disconnect(): void;
-  load(): Promise<EntriesMap>;
-  save(entries: EntriesMap): Promise<void>;
+  load(): Promise<TEntriesMap>;
+  save(entries: TEntriesMap): Promise<void>;
   getLastSyncTime(): Date | null;
-}
+};
 
-export interface CloudSyncState {
-  provider: StorageProvider | null;
-  status: SyncStatus;
+export type TCloudSyncState = {
+  provider: TStorageProvider | null;
+  status: TSyncStatus;
   lastSyncTime: Date | null;
   error: string | null;
-}
+};

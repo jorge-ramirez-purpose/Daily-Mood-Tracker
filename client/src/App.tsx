@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import "./App.css";
-import { MOODS, type MoodKey } from "./constants/moods";
-import type { EntriesMap, NormalizedEntry } from "./utils/types";
+import { MOODS, type TMoodKey } from "./constants/moods";
+import type { TEntriesMap, TNormalizedEntry } from "./utils/types";
 import { aggregateYearData, normalizeEntry, serializeEntry } from "./utils/data";
 import { DailyMoodSelector } from "./components/DailyMoodSelector";
 import { OverviewPanel } from "./components/OverviewPanel";
@@ -24,19 +24,19 @@ import { SettingsMenu } from "./components/SettingsMenu";
 import { ConfirmModal } from "./components/ConfirmModal";
 import { CloudSyncSettings } from "./components/CloudSyncSettings";
 
-interface ModalState {
+type TModalState = {
   isOpen: boolean;
   title: string;
   message: string;
   confirmLabel?: string;
   cancelLabel?: string;
-}
+};
 
 const ENTRIES_STORAGE_KEY = "mood-tracker.daily.entries";
 const CURRENT_YEAR = new Date().getFullYear();
 
 const App = () => {
-  const [entries, setEntries] = useState<EntriesMap>(() =>
+  const [entries, setEntries] = useState<TEntriesMap>(() =>
     loadEntries(typeof window === "undefined" ? null : window.localStorage, ENTRIES_STORAGE_KEY)
   );
   const [showOverview, setShowOverview] = useState(false);
@@ -45,7 +45,7 @@ const App = () => {
   const [selectedYear, setSelectedYear] = useState(CURRENT_YEAR);
 
   const [showSync, setShowSync] = useState(false);
-  const [modal, setModal] = useState<ModalState>({ isOpen: false, title: "", message: "" });
+  const [modal, setModal] = useState<TModalState>({ isOpen: false, title: "", message: "" });
   const modalResolverRef = useRef<((value: boolean) => void) | null>(null);
 
   const showConfirm = useCallback((title: string, message: string, confirmLabel?: string, cancelLabel?: string): Promise<boolean> => {
@@ -97,7 +97,7 @@ const App = () => {
 
   const availableYears = useMemo(() => getAvailableYears(entries, CURRENT_YEAR), [entries]);
 
-  const selectedEntry: NormalizedEntry = normalizeEntry(entries[selectedDateKey]) ?? {
+  const selectedEntry: TNormalizedEntry = normalizeEntry(entries[selectedDateKey]) ?? {
     first: null,
     second: null,
     note: null,
@@ -110,9 +110,9 @@ const App = () => {
   const yearData = useMemo(() => aggregateYearData(entries, selectedYear), [entries, selectedYear]);
   const totalDaysTracked = useMemo(() => getTotalDaysTracked(entries, selectedYear), [entries, selectedYear]);
 
-  const updateEntryForDate = (dateKey: string, updater: (entry: NonNullable<NormalizedEntry>) => NormalizedEntry) => {
+  const updateEntryForDate = (dateKey: string, updater: (entry: NonNullable<TNormalizedEntry>) => TNormalizedEntry) => {
     setEntries((prev) => {
-      const normalized: NonNullable<NormalizedEntry> = normalizeEntry(prev[dateKey]) ?? {
+      const normalized: NonNullable<TNormalizedEntry> = normalizeEntry(prev[dateKey]) ?? {
         first: null,
         second: null,
         note: null,
@@ -131,7 +131,7 @@ const App = () => {
     });
   };
 
-  const handlePrimarySelect = (moodKey: MoodKey) => {
+  const handlePrimarySelect = (moodKey: TMoodKey) => {
     updateEntryForDate(selectedDateKey, (entry) => {
       if (entry.first === moodKey) {
         return { first: null, second: null, note: entry.note };
@@ -144,7 +144,7 @@ const App = () => {
     });
   };
 
-  const handleSecondarySelect = (moodKey: MoodKey) => {
+  const handleSecondarySelect = (moodKey: TMoodKey) => {
     updateEntryForDate(selectedDateKey, (entry) => {
       if (entry.second === moodKey) {
         return { first: entry.first, second: null, note: entry.note };

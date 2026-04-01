@@ -1,13 +1,13 @@
 import { useCloudSync } from "../hooks/useCloudSync";
-import type { EntriesMap } from "../utils/types";
-import type { SyncStatus } from "../lib/storage/types";
+import type { TEntriesMap } from "../utils/types";
+import type { TSyncStatus } from "../lib/storage/types";
 
-interface Props {
-  entries: EntriesMap;
-  setEntries: (entries: EntriesMap) => void;
-}
+type TProps = {
+  entries: TEntriesMap;
+  setEntries: (entries: TEntriesMap) => void;
+};
 
-export function CloudSyncSettings({ entries, setEntries }: Props) {
+export function CloudSyncSettings({ entries, setEntries }: TProps) {
   const { provider, status, lastSyncTime, error, connect, disconnect, sync, isConnected } =
     useCloudSync(entries, setEntries);
 
@@ -74,8 +74,8 @@ export function CloudSyncSettings({ entries, setEntries }: Props) {
   );
 }
 
-function StatusBadge({ status }: { status: SyncStatus }) {
-  const labels: Record<SyncStatus, string> = {
+function StatusBadge({ status }: { status: TSyncStatus }) {
+  const labels: Record<TSyncStatus, string> = {
     idle: "Idle",
     syncing: "Syncing…",
     synced: "Synced",

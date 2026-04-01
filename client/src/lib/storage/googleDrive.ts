@@ -1,5 +1,5 @@
-import type { StorageProvider } from "./types";
-import type { EntriesMap } from "../../utils/types";
+import type { TStorageProvider } from "./types";
+import type { TEntriesMap } from "../../utils/types";
 
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string;
 const SCOPES = "https://www.googleapis.com/auth/drive.appdata";
@@ -8,7 +8,7 @@ const DATA_FILE_NAME = "mood-tracker-data.json";
 const TOKEN_KEY = "mood-tracker.google.token";
 const TOKEN_EXPIRY_KEY = "mood-tracker.google.expiry";
 
-export class GoogleDriveProvider implements StorageProvider {
+export class GoogleDriveProvider implements TStorageProvider {
   readonly name = "googleDrive" as const;
   readonly displayName = "Google Drive";
 
@@ -62,7 +62,7 @@ export class GoogleDriveProvider implements StorageProvider {
     localStorage.removeItem(TOKEN_EXPIRY_KEY);
   }
 
-  async load(): Promise<EntriesMap> {
+  async load(): Promise<TEntriesMap> {
     if (!this.accessToken) throw new Error("Not connected to Google Drive");
 
     const fileId = await this.findDataFile();
@@ -70,10 +70,10 @@ export class GoogleDriveProvider implements StorageProvider {
 
     const response = await gapi.client.drive.files.get({ fileId, alt: "media" });
     this.lastSyncTime = new Date();
-    return JSON.parse(response.body) as EntriesMap;
+    return JSON.parse(response.body) as TEntriesMap;
   }
 
-  async save(entries: EntriesMap): Promise<void> {
+  async save(entries: TEntriesMap): Promise<void> {
     if (!this.accessToken) throw new Error("Not connected to Google Drive");
 
     const content = JSON.stringify(entries);

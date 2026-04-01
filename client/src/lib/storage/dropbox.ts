@@ -1,6 +1,6 @@
 import { Dropbox, DropboxAuth } from "dropbox";
-import type { StorageProvider } from "./types";
-import type { EntriesMap } from "../../utils/types";
+import type { TStorageProvider } from "./types";
+import type { TEntriesMap } from "../../utils/types";
 
 const CLIENT_ID = import.meta.env.VITE_DROPBOX_CLIENT_ID as string;
 const DATA_FILE_PATH = "/mood-tracker-data.json";
@@ -8,7 +8,7 @@ const DATA_FILE_PATH = "/mood-tracker-data.json";
 const TOKEN_KEY = "mood-tracker.dropbox.token";
 const CODE_VERIFIER_KEY = "mood-tracker.dropbox.verifier";
 
-export class DropboxProvider implements StorageProvider {
+export class DropboxProvider implements TStorageProvider {
   readonly name = "dropbox" as const;
   readonly displayName = "Dropbox";
 
@@ -67,7 +67,7 @@ export class DropboxProvider implements StorageProvider {
     localStorage.removeItem(TOKEN_KEY);
   }
 
-  async load(): Promise<EntriesMap> {
+  async load(): Promise<TEntriesMap> {
     if (!this.dbx) throw new Error("Not connected to Dropbox");
 
     try {
@@ -75,7 +75,7 @@ export class DropboxProvider implements StorageProvider {
       const blob = (response.result as { fileBlob: Blob }).fileBlob;
       const text = await blob.text();
       this.lastSyncTime = new Date();
-      return JSON.parse(text) as EntriesMap;
+      return JSON.parse(text) as TEntriesMap;
     } catch (error: unknown) {
       const err = error as { error?: { error?: { ".tag"?: string; path?: { ".tag"?: string } } } };
       if (err?.error?.error?.[".tag"] === "path" && err?.error?.error?.path?.[".tag"] === "not_found") {
@@ -85,7 +85,7 @@ export class DropboxProvider implements StorageProvider {
     }
   }
 
-  async save(entries: EntriesMap): Promise<void> {
+  async save(entries: TEntriesMap): Promise<void> {
     if (!this.dbx) throw new Error("Not connected to Dropbox");
 
     await this.dbx.filesUpload({
